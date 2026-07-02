@@ -216,3 +216,21 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ── Project-specific (defects-gen) ──────────────────────────────────────────
+# .env is already ignored by the Python template above (secrets — never commit;
+# copy .env.example to .env and fill in).
+
+# Upstream OSMO source tree (74M+): clone it yourself if you need it —
+#   git clone https://github.com/NVIDIA/OSMO
+OSMO/
+
+# Workflow outputs pulled from S3 (regenerate via `osmo data download`).
+outputs/
+
+# Superseded values backups.
+*.bak-*
+
+# Agent/editor local state.
+.claude/
+nohup.out

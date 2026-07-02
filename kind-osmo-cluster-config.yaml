@@ -1,0 +1,54 @@
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+name: osmo
+nodes:
+  - role: control-plane
+  - role: worker
+    kubeadmConfigPatches:
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "node_group=kai-scheduler,nvidia.com/gpu.deploy.operands=false"
+  - role: worker
+    kubeadmConfigPatches:
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "node_group=data,nvidia.com/gpu.deploy.operands=false"
+    extraMounts:
+      # Durable backing for the in-cluster MinIO S3 (osmo-values/minio.yaml
+      # mounts hostPath /var/lib/minio on this node). Deliberately NOT under
+      # /tmp — the original localstack mount used /tmp/localstack-s3 and lost
+      # the bucket on every host reboot.
+      - hostPath: /var/lib/osmo-minio
+        containerPath: /var/lib/minio
+  - role: worker
+    kubeadmConfigPatches:
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "node_group=service,nvidia.com/gpu.deploy.operands=false"
+    extraPortMappings:
+      - containerPort: 30080
+        hostPort: 80
+        protocol: TCP
+  - role: worker
+    kubeadmConfigPatches:
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "node_group=service,nvidia.com/gpu.deploy.operands=false"
+  - role: worker
+    extraMounts:
+      - hostPath: /dev/null
+        containerPath: /var/run/nvidia-container-devices/all
+    kubeadmConfigPatches:
+    - |
+      kind: JoinConfiguration
+      nodeRegistration:
+        kubeletExtraArgs:
+          node-labels: "node_group=compute"
