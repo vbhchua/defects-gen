@@ -1,0 +1,82 @@
+# MinIO — S3 backend for OSMO, replacing the chart's localstack-s3.
+#
+# Why: localstack-persist loses multipart-upload state under concurrent large
+# uploads (its 10 s persist cycle write-locks the server; stalled clients retry
+# CompleteMultipartUpload, which races the first attempt's part cleanup →
+# NoSuchUpload / missing part-file InternalError). It also loses buckets on a
+# host restart. MinIO is disk-native and restart-safe; data lives on the kind
+# data node at /var/lib/minio (backed by the host's 1 TB volume).
+#
+# Applied with plain kubectl (not part of the Helm release):
+#   kubectl apply -f osmo-values/minio.yaml
+#
+# Credentials (referenced from service.yaml configs + osmo DATA credential):
+#   access_key_id: test / access_key: testtest  (MinIO requires >=8-char secret)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: osmo
+  labels:
+    app: minio
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: minio
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: minio
+    spec:
+      nodeSelector:
+        node_group: data
+      containers:
+      - name: minio
+        image: minio/minio:latest
+        imagePullPolicy: IfNotPresent
+        args: ["server", "/data", "--console-address", ":9001"]
+        env:
+        - name: MINIO_ROOT_USER
+          value: "test"
+        - name: MINIO_ROOT_PASSWORD
+          value: "testtest"
+        ports:
+        - containerPort: 9000
+          name: s3
+        - containerPort: 9001
+          name: console
+        readinessProbe:
+          httpGet:
+            path: /minio/health/ready
+            port: 9000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        hostPath:
+          path: /var/lib/minio
+          type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: minio
+  namespace: osmo
+  labels:
+    app: minio
+spec:
+  selector:
+    app: minio
+  ports:
+  - name: s3
+    port: 9000
+    targetPort: 9000
+  - name: console
+    port: 9001
+    targetPort: 9001
