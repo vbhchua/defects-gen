@@ -16,6 +16,9 @@ Testing NVIDIA Cosmos for defects generation: an operations workspace for standi
 - `PROGRESS.md` — the chronological bring-up log: every failure, root cause, and fix on
   the way to the first successful DIG run. **Read this when something breaks** — most
   failure signatures on this stack are already diagnosed there.
+- `TIMINGS.md` — all measured durations and throughputs (per-workflow wall clocks, phase
+  breakdowns, failure time-to-detect, localstack-vs-MinIO comparison) for benchmarking
+  and presentations.
 - `.env.example` — template for the git-ignored `.env` (Hugging Face token).
 - `OSMO/` — *(git-ignored)* an optional local clone of https://github.com/NVIDIA/OSMO
   for source reference. Not part of the deployment config; clone it yourself if needed.
