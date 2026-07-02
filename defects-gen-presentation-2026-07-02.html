@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>defects-gen — synthetic defect images for AOI on your own GPU</title>
+<style>
+  :root{
+    --green:#76b900; --green-d:#5a8f00; --green-soft:#eaf4d8;
+    --ink:#10160f; --ink2:#394434; --muted:#74807a;
+    --line:#e0e6df; --bg:#ffffff; --panel:#f5f8f3; --stage:#e8ebe7;
+    --ok:#2f9e44; --warn:#c98a00; --warnbg:#fff6e0; --bad:#c0392b; --badbg:#fdecea;
+    --shadow:0 18px 50px rgba(20,40,15,.18);
+    --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:var(--font);background:var(--stage);color:var(--ink);
+    -webkit-font-smoothing:antialiased;overflow:hidden}
+
+  /* progress bar */
+  #bar{position:fixed;top:0;left:0;height:3px;background:var(--green);width:0;z-index:50;
+    transition:width .45s cubic-bezier(.4,0,.2,1)}
+
+  /* stage + 16:9 deck */
+  #stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+  #deck{width:1280px;height:720px;background:var(--bg);border-radius:10px;
+    box-shadow:var(--shadow);overflow:hidden;transform-origin:center center;position:relative}
+  #track{display:flex;height:100%;width:100%;transition:transform .55s cubic-bezier(.45,.05,.2,1)}
+  .slide{min-width:100%;height:100%;padding:62px 76px;display:flex;flex-direction:column;
+    position:relative;background:var(--bg)}
+
+  /* typography */
+  h1{font-size:88px;font-weight:800;letter-spacing:-3px;line-height:.92}
+  h2{font-size:42px;font-weight:800;letter-spacing:-1px;line-height:1.04}
+  .eyebrow{font-size:15px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;
+    color:var(--green-d);margin-bottom:14px}
+  .lead{font-size:21px;line-height:1.5;color:var(--ink2);font-weight:400}
+  .slide p{font-size:18px;line-height:1.55;color:var(--ink2)}
+  .accent{color:var(--green-d);font-weight:700}
+  b,strong{color:var(--ink);font-weight:700}
+  code{font-size:.92em}
+  .head{margin-bottom:30px}
+  .head .rule{width:54px;height:5px;background:var(--green);border-radius:3px;margin-top:18px}
+
+  /* reveal animation */
+  .r{opacity:0;transform:translateY(16px)}
+  .slide.active .r{opacity:1;transform:none;transition:opacity .5s ease, transform .5s ease}
+  .slide.active .r:nth-child(1){transition-delay:.05s}
+  .slide.active .r:nth-child(2){transition-delay:.12s}
+  .slide.active .r:nth-child(3){transition-delay:.19s}
+  .slide.active .r:nth-child(4){transition-delay:.26s}
+  .slide.active .r:nth-child(5){transition-delay:.33s}
+  .slide.active .r:nth-child(6){transition-delay:.40s}
+
+  /* hero */
+  .hero{display:grid;grid-template-columns:1.05fr 1fr;gap:54px;flex:1;align-items:center}
+  .hero .tag{display:inline-block;font-size:13px;font-weight:700;letter-spacing:1.5px;
+    text-transform:uppercase;color:var(--green-d);background:var(--green-soft);
+    padding:7px 14px;border-radius:999px;margin-bottom:26px}
+  .hero h1 .dot{color:var(--green)}
+  .hero .sub{font-size:24px;line-height:1.4;color:var(--ink2);margin-top:24px;font-weight:500}
+  .hero .meta{margin-top:30px;font-size:15px;color:var(--muted);letter-spacing:.3px}
+  .glance{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:22px 22px}
+  .stat .n{font-size:40px;font-weight:800;color:var(--green-d);letter-spacing:-1px;line-height:1}
+  .stat .l{font-size:14.5px;color:var(--ink2);margin-top:9px;line-height:1.35}
+  .summary-line{margin-top:18px;font-size:15px;color:var(--muted);grid-column:1/-1;
+    display:flex;align-items:center;gap:9px}
+
+  /* feature grid */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;flex:1;align-content:center}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 24px;
+    display:flex;flex-direction:column;gap:9px;position:relative}
+  .card .ic{font-size:26px;line-height:1}
+  .card h3{font-size:19px;font-weight:700;letter-spacing:-.3px}
+  .card p{font-size:14.5px;line-height:1.45;color:var(--ink2)}
+  .pill{position:absolute;top:18px;right:18px;font-size:11px;font-weight:700;letter-spacing:.5px;
+    padding:4px 9px;border-radius:999px}
+  .pill.ok{background:var(--green-soft);color:var(--green-d)}
+  .pill.wip{background:var(--warnbg);color:var(--warn)}
+
+  /* architecture */
+  .arch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;flex:1;align-items:stretch;margin-top:6px}
+  .col{display:flex;flex-direction:column}
+  .col .ctitle{font-size:13px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+    color:var(--muted);margin-bottom:12px;text-align:center}
+  .stackbox{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;
+    flex:1;display:flex;flex-direction:column;gap:10px;justify-content:center}
+  .node{background:#fff;border:1px solid var(--line);border-radius:10px;padding:11px 14px;
+    font-size:14.5px;font-weight:600;color:var(--ink)}
+  .node small{display:block;font-weight:400;color:var(--muted);font-size:12.5px;margin-top:2px}
+  .node.green{border-color:var(--green);background:#f7fcec}
+  .gate{background:var(--ink);color:#fff;border:none;text-align:center}
+  .gate b{color:#fff}
+  .gate small{color:#c7d2c1}
+  .archnote{margin-top:16px;font-size:14.5px;color:var(--muted);text-align:center}
+
+  /* flow */
+  .flowwrap{flex:1;display:flex;flex-direction:column;justify-content:center;gap:24px}
+  .flow{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;align-items:stretch}
+  .step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px 14px;
+    display:flex;flex-direction:column;gap:8px;transition:all .35s ease;position:relative;opacity:.55}
+  .step .si{width:26px;height:26px;border-radius:999px;background:#fff;border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:var(--muted)}
+  .step h4{font-size:15px;font-weight:700;letter-spacing:-.2px}
+  .step p{font-size:12.5px;line-height:1.35;color:var(--ink2)}
+  .step .via{font-size:10.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--green-d)}
+  .step.lit{opacity:1;border-color:var(--green);background:#f7fcec;box-shadow:0 8px 22px rgba(118,185,0,.18);transform:translateY(-3px)}
+  .step.lit .si{background:var(--green);border-color:var(--green);color:#fff}
+  .step.done{opacity:.9;border-color:#cfe3a8;background:#fbfdf6}
+  .step.done .si{background:#cfe3a8;border-color:#cfe3a8;color:var(--green-d)}
+  .flowctl{display:flex;align-items:center;gap:16px}
+  .transport{display:flex;align-items:center;gap:8px}
+  .tbtn{width:42px;height:42px;border-radius:999px;border:1.5px solid var(--line);background:#fff;
+    color:var(--ink);font-size:15px;cursor:pointer;font-family:var(--font);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .12s ease,background .2s,border-color .2s,opacity .2s}
+  .tbtn:hover:not(:disabled){background:var(--green-soft);border-color:var(--green);transform:translateY(-1px)}
+  .tbtn:disabled{opacity:.3;cursor:default}
+  .tbtn.play{background:var(--green);border-color:var(--green);color:#fff;
+    box-shadow:0 6px 16px rgba(118,185,0,.30)}
+  .tbtn.play:hover:not(:disabled){background:var(--green-d);border-color:var(--green-d)}
+  #fstep{font-size:13px;font-weight:700;color:var(--muted);letter-spacing:.5px;margin-left:6px;min-width:44px;text-align:center}
+  .flowcap{font-size:15px;color:var(--ink2);min-height:22px}
+  .flowcap b{color:var(--green-d)}
+
+  /* results showcase */
+  .trip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px}
+  .shot{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+  .shot img{width:100%;height:auto;border-radius:8px;display:block}
+  .shot .cap{font-size:13px;font-weight:700;color:var(--ink2);margin-top:9px}
+  .shot .cap small{display:block;font-weight:400;color:var(--muted);font-size:12px;margin-top:1px}
+  .classrow{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-top:18px}
+  .classrow .shot .cap{font-size:12px}
+
+  /* timings */
+  .tgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px}
+  .tstat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;text-align:center}
+  .tstat .n{font-size:44px;font-weight:800;color:var(--green-d);letter-spacing:-1.5px;line-height:1}
+  .tstat .n small{font-size:20px;font-weight:700;letter-spacing:0}
+  .tstat .l{font-size:14px;color:var(--ink2);margin-top:8px;line-height:1.35}
+  .vs{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .vsbox{border-radius:14px;padding:18px 22px;border:1px solid var(--line)}
+  .vsbox.bad{background:var(--badbg);border-color:#eec4bd}
+  .vsbox.good{background:#f7fcec;border-color:var(--green)}
+  .vsbox h3{font-size:16px;font-weight:800;margin-bottom:8px}
+  .vsbox.bad h3{color:var(--bad)}
+  .vsbox.good h3{color:var(--green-d)}
+  .vsbox p{font-size:14px;line-height:1.45;color:var(--ink2)}
+  .amort{margin-top:18px;font-size:15px;color:var(--ink2);background:var(--panel);
+    border:1px solid var(--line);border-radius:12px;padding:14px 18px}
+
+  /* war stories */
+  .chips{display:grid;grid-template-columns:1fr 1fr;gap:16px;flex:1;align-content:center}
+  .chip{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .chip h3{font-size:17px;font-weight:700;margin-bottom:7px;letter-spacing:-.2px;display:flex;gap:9px;align-items:center}
+  .chip h3 .k{color:var(--green-d)}
+  .chip h3 .sig{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--bad);
+    background:var(--badbg);padding:3px 9px;border-radius:999px;white-space:nowrap}
+  .chip p{font-size:14px;line-height:1.45;color:var(--ink2)}
+
+  /* next steps */
+  .steps-list{display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center}
+  .nstep{display:flex;gap:18px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
+    border-radius:13px;padding:17px 20px}
+  .nstep .num{flex:none;width:34px;height:34px;border-radius:999px;background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px}
+  .nstep .nt{font-size:16.5px;font-weight:700;color:var(--ink)}
+  .nstep .nd{font-size:14px;color:var(--ink2);margin-top:3px;line-height:1.4}
+  .nstep.opt .num{background:var(--muted)}
+
+  .footnote{position:absolute;bottom:30px;left:76px;font-size:12.5px;color:var(--muted)}
+
+  /* floating nav */
+  #nav{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:60;
+    display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.82);
+    backdrop-filter:blur(14px) saturate(1.4);-webkit-backdrop-filter:blur(14px) saturate(1.4);
+    border:1px solid rgba(0,0,0,.08);border-radius:999px;padding:8px 12px;
+    box-shadow:0 10px 34px rgba(20,40,15,.20)}
+  #nav button{border:none;background:transparent;cursor:pointer;font-family:var(--font);
+    color:var(--ink);width:34px;height:34px;border-radius:999px;font-size:18px;
+    display:flex;align-items:center;justify-content:center;transition:background .15s}
+  #nav button:hover{background:var(--green-soft)}
+  #nav button:disabled{opacity:.28;cursor:default}
+  #dots{display:flex;gap:8px;align-items:center;padding:0 4px}
+  #dots span{width:8px;height:8px;border-radius:999px;background:#c8d2c4;cursor:pointer;transition:all .2s}
+  #dots span.on{background:var(--green);transform:scale(1.35)}
+  #counter{font-size:13px;font-weight:700;color:var(--ink2);min-width:54px;text-align:center;letter-spacing:.5px}
+  .hint{position:fixed;bottom:26px;right:26px;font-size:12px;color:var(--muted);z-index:55;opacity:.8}
+
+  /* print → 16:9 PDF */
+  @media print{
+    @page{size:1280px 720px;margin:0}
+    body{background:#fff;overflow:visible}
+    #bar,#nav,.hint{display:none!important}
+    #stage{position:static}
+    #deck{transform:none!important;width:1280px;height:720px;box-shadow:none;border-radius:0}
+    #track{display:block;width:auto;transform:none!important}
+    .slide{page-break-after:always;height:720px;width:1280px}
+    .r{opacity:1!important;transform:none!important}
+    .step{opacity:1}
+  }
+</style>
+</head>
+<body>
+<div id="bar"></div>
+
+<div id="stage">
+  <div id="deck">
+    <div id="track">
+
+      <!-- 1 · EXECUTIVE SUMMARY -->
+      <section class="slide">
+        <div class="hero">
+          <div>
+            <span class="tag r">Testing NVIDIA Cosmos for defects generation</span>
+            <h1 class="r">defects-gen<span class="dot">.</span></h1>
+            <div class="sub r"><b>Synthetic defect images for AOI</b> — the full
+              <span class="accent">NVIDIA OSMO + Cosmos AnomalyGen</span> pipeline,
+              reproduced on a single GPU host.</div>
+            <div class="meta r">kind cluster · OSMO service 6.3.1 · Cosmos-AnomalyGen-Metal-2B ·
+              1× RTX PRO 6000 · 2026-07-02</div>
+          </div>
+          <div class="glance r">
+            <div class="stat"><div class="n">30</div><div class="l"><b>labeled defect images</b> — masks, crops, overlays, DAFT-v3 labels</div></div>
+            <div class="stat"><div class="n">31<small style="font-size:22px"> min</small></div><div class="l"><b>end-to-end</b> Day 1 run — only ~8 min of it GPU time</div></div>
+            <div class="stat"><div class="n">81<small style="font-size:22px"> GB</small></div><div class="l">model + dataset assets staged once on <b>MinIO S3</b></div></div>
+            <div class="stat"><div class="n">4</div><div class="l"><b>root-caused failures</b> — each now a documented, replicable fix</div></div>
+            <div class="summary-line">✅ Metal-surface Day 1 flow verified end-to-end · everything reproducible from one repo</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2 · WHAT'S IN THE BOX -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">What defects-gen delivers</div>
+          <h2>One repo, the whole stack</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="grid3">
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏗️</div>
+            <h3>OSMO on kind</h3>
+            <p>6-node cluster: GPU passthrough, <code>node_group</code> scheduling, no-auth dev gateway. Two Helm charts, values in-repo.</p></div>
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🪣</div>
+            <h3>MinIO S3 backend</h3>
+            <p>Disk-native on the host's <b>1 TB volume</b>. Survives reboots; sustains 80 GB multipart uploads at <b>60–300 MB/s</b>.</p></div>
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🎨</div>
+            <h3>Cosmos AnomalyGen</h3>
+            <p>Metal-surface Day 1 (manual ROI) via NVIDIA's <b>DIG skill</b> — 5 defect classes, pretrained passthrough.</p></div>
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏷️</div>
+            <h3>Labels included</h3>
+            <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
+          <div class="card r"><span class="pill ok">SHIPPED</span><div class="ic">🔬</div>
+            <h3>Failure forensics</h3>
+            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM spirals, bucket wipes, token traps, multipart corruption.</p></div>
+          <div class="card r"><span class="pill wip">READY</span><div class="ic">🧪</div>
+            <h3>PCBA &amp; glass next</h3>
+            <p>Same pipeline covers PCBA Day 0/1 and glass — assets and cookbooks already in the skill.</p></div>
+        </div>
+      </section>
+
+      <!-- 3 · ARCHITECTURE -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">How it's built</div>
+          <h2>Architecture — one host, three planes</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="arch">
+          <div class="col r">
+            <div class="ctitle">Host · 62 GiB / 1 TB</div>
+            <div class="stackbox">
+              <div class="node">kind cluster <small>1 control-plane + 5 workers</small></div>
+              <div class="node">NVIDIA driver + container toolkit <small>GPU passthrough to compute node</small></div>
+              <div class="node green">/var/lib/osmo-minio <small>durable S3 data — host-mounted (not /tmp!)</small></div>
+            </div>
+          </div>
+          <div class="col r">
+            <div class="ctitle">osmo namespace</div>
+            <div class="stackbox">
+              <div class="node">envoy gateway <small>no-auth dev identity · host :80</small></div>
+              <div class="node">osmo service + worker + logger <small>postgres · redis</small></div>
+              <div class="node green">MinIO :9000 <small>bucket <code>osmo</code> — data + logs + artifacts</small></div>
+              <div class="node">backend-operator <small>token login (not password/dev)</small></div>
+            </div>
+          </div>
+          <div class="col r">
+            <div class="ctitle">Workflow plane</div>
+            <div class="stackbox">
+              <div class="node gate"><b>POD_TEMPLATE</b><small>S3 env · nvoptix · 16 GiB /dev/shm — ConfigMap-managed</small></div>
+              <div class="node">task pods <small>osmo-ctrl + user container · namespace <code>default</code></small></div>
+              <div class="node green">AnomalyGen 2B on RTX PRO 6000 <small>21.6 GiB GPU mem · ~25 it/s</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template the cluster kept fighting us over (three of the four war stories live there).</div>
+      </section>
+
+      <!-- 4 · ONE RUN, END TO END (interactive) -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">How it works</div>
+          <h2>One flow — a Day 1 generation run, end to end</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="flowwrap">
+          <div class="flow" id="flow">
+            <div class="step" data-cap="One command: <code>osmo workflow submit …day1_manual_roi.yaml</code> with the metal taxonomy, <b>checkpoint_step=10000</b>, <b>infer_memory=48Gi</b>.">
+              <div class="si">1</div><h4>Submit</h4><p>osmo CLI → gateway</p></div>
+            <div class="step" data-cap="The backend-operator schedules the task pod onto the <b>GPU node</b>; POD_TEMPLATE injects S3 env, nvoptix and a 16 GiB /dev/shm.">
+              <div class="si">2</div><h4>Schedule</h4><p>operator → compute node</p><span class="via">pod_template</span></div>
+            <div class="step" data-cap="osmo-ctrl pulls <b>84.5 GB</b> of inputs (pretrained tree, checkpoint, dataset) from MinIO at 65–130 MB/s — <b>~22 min</b>, the fixed cost of every run.">
+              <div class="si">3</div><h4>Pull inputs</h4><p>80.6 G pretrained + data</p><span class="via">~22 min · MinIO</span></div>
+            <div class="step" data-cap="Cosmos-AnomalyGen-Metal-2B paints defects into the masked regions — 35 diffusion steps/image at ~25 it/s, <b>21.6 GiB</b> GPU memory.">
+              <div class="si">4</div><h4>Generate</h4><p>AnomalyGen 2B inference</p><span class="via">~8 min · GPU</span></div>
+            <div class="step" data-cap="Each sample is emitted with its <b>original, mask, crop, annotated overlay</b>, plus SDG_result.csv and DAFT-v3 contextual labels.">
+              <div class="si">5</div><h4>Label</h4><p>masks · crops · DAFT v3</p></div>
+            <div class="step" data-cap="Outputs land at <code>s3://osmo/dig/runs/&lt;name&gt;/anomaly/</code> — pull them with <code>osmo data download</code>. <b>Total: 31 minutes.</b>">
+              <div class="si">6</div><h4>Retrieve</h4><p>runs/&lt;name&gt;/anomaly</p><span class="via">~5 s upload</span></div>
+          </div>
+          <div class="flowctl r">
+            <div class="transport">
+              <button class="tbtn" id="back" title="Step back" aria-label="Step back">⏮</button>
+              <button class="tbtn play" id="play" title="Play" aria-label="Play">▶</button>
+              <button class="tbtn" id="pause" title="Pause" aria-label="Pause">⏸</button>
+              <button class="tbtn" id="fwd" title="Step forward" aria-label="Step forward">⏭</button>
+              <span id="fstep">– / 6</span>
+            </div>
+            <div class="flowcap" id="cap">Press play — or step through the 31-minute run.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5 · RESULTS -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">The output</div>
+          <h2>Real samples from the verified run</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="trip r">
+          <div class="shot"><img src="docs/images/MT_Crack_original.png" alt="clean input"><div class="cap">Clean input<small>pre-captured metal-surface ROI</small></div></div>
+          <div class="shot"><img src="docs/images/MT_Crack_mask.png" alt="defect mask"><div class="cap">Defect mask<small>where the model must paint the defect</small></div></div>
+          <div class="shot"><img src="docs/images/MT_Crack.png" alt="generated crack"><div class="cap">Generated defect<small>MT_Crack — AnomalyGen 2B output</small></div></div>
+        </div>
+        <div class="classrow r">
+          <div class="shot"><img src="docs/images/MT_Blowhole.png" alt="MT_Blowhole"><div class="cap">MT_Blowhole</div></div>
+          <div class="shot"><img src="docs/images/MT_Break.png" alt="MT_Break"><div class="cap">MT_Break</div></div>
+          <div class="shot"><img src="docs/images/MT_Crack.png" alt="MT_Crack"><div class="cap">MT_Crack</div></div>
+          <div class="shot"><img src="docs/images/MT_Fray.png" alt="MT_Fray"><div class="cap">MT_Fray</div></div>
+          <div class="shot"><img src="docs/images/MT_Uneven.png" alt="MT_Uneven"><div class="cap">MT_Uneven</div></div>
+        </div>
+        <div class="footnote r">6 samples per class × 5 classes = 30 images, each with mask + crop + overlay + CSV row + DAFT-v3 labels.</div>
+      </section>
+
+      <!-- 6 · WAR STORIES -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">The findings</div>
+          <h2>Four failures, four root causes</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="chips">
+          <div class="chip r"><h3><span class="k">›</span> The 18-minute OOM spiral <span class="sig">exit 2137</span></h3>
+            <p>Task pods get <b>no S3 env</b> from the chart → boto3 falls back to virtual-hosted DNS → unresolvable → ctrl leaks <b>13 MB/s</b> against a 24 h retry window until cgroup OOM. Fix: endpoint + path-style env in <b>POD_TEMPLATE</b>, both containers.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> The vanishing bucket <span class="sig">exit 2014</span></h3>
+            <p>The chart's localstack data dir was bind-mounted to host <b>/tmp</b> — wiped every reboot, and the bucket only exists via an install-time hook. Every workflow died in 3 s; even the logs API returned <code>NoSuchBucket</code>.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> The token that half-works <span class="sig">KeyError</span></h3>
+            <p>An HF <b>OAuth token</b> reads gated repos (probes pass!) but crashes in-pod <code>hf auth login</code> — no <code>accessToken</code> in whoami. Bonus trap: OSMO <b>snapshots credentials at submit time</b> — fix creds <i>before</i> submitting.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> Multipart roulette <span class="sig">NoSuchUpload</span></h3>
+            <p>localstack-persist write-locks the server every 10 s; under an 80 GB upload, stalled clients retry <code>CompleteMultipartUpload</code> and race its part-cleanup. Upload regressed 40%→34% forever. Fix: <b>replace with MinIO</b> — zero errors, first try.</p></div>
+        </div>
+        <div class="footnote r">Full forensics with logs and timelines: PROGRESS.md · every signature is now a 30-second diagnosis.</div>
+      </section>
+
+      <!-- 7 · TIMINGS -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Measured, not estimated</div>
+          <h2>Timings on 1× RTX PRO 6000</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="tgrid r">
+          <div class="tstat"><div class="n">~3<small> min</small></div><div class="l"><b>Metal setup</b> — checkpoint + curated dataset → S3</div></div>
+          <div class="tstat"><div class="n">~56<small> min</small></div><div class="l"><b>Pretrained setup</b> — 80.6 GB: HF ↓ 11.5 min · assemble 21 min · S3 ↑ 23 min @ 63.6 MB/s</div></div>
+          <div class="tstat"><div class="n">~31<small> min</small></div><div class="l"><b>Day 1 run</b> — 22 min fixed input pull + ~8 min GPU + 5 s upload</div></div>
+        </div>
+        <div class="vs r">
+          <div class="vsbox bad"><h3>✗ localstack (chart default)</h3>
+            <p>Same 80.6 GB upload: <b>died at 40%</b> after 26 min — <code>NoSuchUpload</code> on every multi-GB file, progress moving backwards, killed by the 1 h timeout. Plus: bucket lost on every reboot.</p></div>
+          <div class="vsbox good"><h3>✓ MinIO (this repo)</h3>
+            <p>Identical upload: <b>completed in 22:40</b> at 63.6 MB/s average (peaks 305 MB/s), <b>zero</b> multipart errors, data durable on the host's 1 TB volume across reboots.</p></div>
+        </div>
+        <div class="amort r">📈 <b>Scaling:</b> the 22-min input pull is a <b>fixed</b> cost — 30 images cost ~16 s/image end-to-end, but ~300 images ≈ <b>1.7 h</b>, not 10× the 31-min run. Batch big.</div>
+      </section>
+
+      <!-- 8 · NEXT STEPS -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Where it goes</div>
+          <h2>Next steps</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="steps-list">
+          <div class="nstep r"><div class="num">1</div><div><div class="nt">Scale the metal dataset</div><div class="nd">Re-submit with larger <code>num_sdg</code> — the fixed input pull amortizes, so big batches are cheap per image.</div></div></div>
+          <div class="nstep r"><div class="num">2</div><div><div class="nt">Glass (UC3) Day 1</div><div class="nd">One manual step (Roboflow mobile-screen zip, license-gated browser download), then the identical flow with <code>usecase=glass</code>.</div></div></div>
+          <div class="nstep r"><div class="num">3</div><div><div class="nt">Finetune from scratch</div><div class="nd">Train a custom checkpoint on our own defect data (<code>use_pretrained_checkpoint=false</code>) — the single GPU holds the job for its duration.</div></div></div>
+          <div class="nstep opt r"><div class="num">4</div><div><div class="nt">PCBA Day 0 — full synthetic pipeline</div><div class="nd">USD render → image-edit → AnomalyGen. Needs an image-edit endpoint decision first: the pool has 1 GPU, so a local NIM can't run beside a DIG job.</div></div></div>
+          <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
+        </div>
+        <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
+      </section>
+
+    </div><!-- /track -->
+  </div><!-- /deck -->
+</div><!-- /stage -->
+
+<!-- floating nav -->
+<div id="nav">
+  <button id="prev" aria-label="Previous">‹</button>
+  <div id="dots"></div>
+  <span id="counter"></span>
+  <button id="next" aria-label="Next">›</button>
+</div>
+<div class="hint">← → / space · F fullscreen · ⌘P → PDF</div>
+
+<script>
+(function(){
+  var track=document.getElementById('track');
+  var slides=Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var deck=document.getElementById('deck');
+  var bar=document.getElementById('bar');
+  var counter=document.getElementById('counter');
+  var dotsWrap=document.getElementById('dots');
+  var prevBtn=document.getElementById('prev'), nextBtn=document.getElementById('next');
+  var cur=0, n=slides.length;
+
+  slides.forEach(function(_,i){
+    var d=document.createElement('span');
+    d.addEventListener('click',function(){go(i);});
+    dotsWrap.appendChild(d);
+  });
+  var dots=Array.prototype.slice.call(dotsWrap.children);
+
+  function fit(){
+    var s=Math.min(window.innerWidth/1280, window.innerHeight/720);
+    deck.style.transform='scale('+s+')';
+  }
+  window.addEventListener('resize',fit); fit();
+
+  function go(i){
+    cur=Math.max(0,Math.min(n-1,i));
+    track.style.transform='translateX('+(-cur*100)+'%)';
+    slides.forEach(function(sl,j){ sl.classList.toggle('active', j===cur); });
+    dots.forEach(function(d,j){ d.classList.toggle('on', j===cur); });
+    counter.textContent=(cur+1)+' / '+n;
+    bar.style.width=((cur)/(n-1)*100)+'%';
+    prevBtn.disabled=cur===0; nextBtn.disabled=cur===n-1;
+    resetFlow();
+  }
+  function next(){ go(cur+1); }
+  function prev(){ go(cur-1); }
+  nextBtn.addEventListener('click',next);
+  prevBtn.addEventListener('click',prev);
+
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowRight'||e.key===' '||e.key==='PageDown'){ e.preventDefault(); next(); }
+    else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); prev(); }
+    else if(e.key==='Home'){ go(0); }
+    else if(e.key==='End'){ go(n-1); }
+    else if(e.key.toLowerCase()==='f'){ if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();}else{document.exitFullscreen&&document.exitFullscreen();} }
+  });
+
+  var x0=null;
+  deck.addEventListener('touchstart',function(e){ x0=e.touches[0].clientX; },{passive:true});
+  deck.addEventListener('touchend',function(e){
+    if(x0===null) return;
+    var dx=e.changedTouches[0].clientX-x0;
+    if(Math.abs(dx)>50){ dx<0?next():prev(); }
+    x0=null;
+  },{passive:true});
+
+  // flow transport (play · pause · step forward/back)
+  var steps=Array.prototype.slice.call(document.querySelectorAll('#flow .step'));
+  var cap=document.getElementById('cap');
+  var fstep=document.getElementById('fstep');
+  var backBtn=document.getElementById('back'), fwdBtn=document.getElementById('fwd');
+  var playBtn=document.getElementById('play'), pauseBtn=document.getElementById('pause');
+  var last=steps.length-1;
+  var flowIdx=-1, playing=false, timer=null;
+  var introCap='Press play — or step through the 31-minute run.';
+
+  function renderFlow(){
+    steps.forEach(function(s,i){
+      s.classList.toggle('lit', i===flowIdx);
+      s.classList.toggle('done', i<flowIdx);
+    });
+    if(flowIdx<0) cap.innerHTML=introCap;
+    else if(flowIdx>=last) cap.innerHTML=steps[last].getAttribute('data-cap');
+    else cap.innerHTML=steps[flowIdx].getAttribute('data-cap');
+    fstep.textContent=(flowIdx<0?'–':(flowIdx+1))+' / '+steps.length;
+    backBtn.disabled=flowIdx<=-1;
+    fwdBtn.disabled=flowIdx>=last;
+    playBtn.disabled=playing;
+    pauseBtn.disabled=!playing;
+  }
+  function setFlow(i){ flowIdx=Math.max(-1,Math.min(last,i)); renderFlow(); }
+  function pauseFlow(){ playing=false; if(timer){clearTimeout(timer);timer=null;} renderFlow(); }
+  function resetFlow(){ playing=false; if(timer){clearTimeout(timer);timer=null;} flowIdx=-1; renderFlow(); }
+  function scheduleNext(delay){
+    clearTimeout(timer);
+    timer=setTimeout(function(){
+      if(flowIdx>=last){ pauseFlow(); return; }
+      setFlow(flowIdx+1);
+      if(flowIdx>=last){ pauseFlow(); return; }
+      scheduleNext(1300);
+    },delay);
+  }
+  function playFlow(){
+    if(flowIdx>=last) setFlow(-1);
+    playing=true; renderFlow();
+    scheduleNext(flowIdx<0?300:1300);
+  }
+  if(playBtn) playBtn.addEventListener('click',playFlow);
+  if(pauseBtn) pauseBtn.addEventListener('click',pauseFlow);
+  if(fwdBtn) fwdBtn.addEventListener('click',function(){ pauseFlow(); setFlow(flowIdx+1); });
+  if(backBtn) backBtn.addEventListener('click',function(){ pauseFlow(); setFlow(flowIdx-1); });
+
+  go(0);
+})();
+</script>
+</body>
+</html>
