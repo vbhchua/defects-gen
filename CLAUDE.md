@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git conventions
+
+- **Commit messages follow [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)**
+  (`feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, … with optional scope).
+- **Never push to `master` directly.** All changes go through a feature branch and a
+  pull request — no exceptions, including docs-only changes.
+
 ## What this workspace is
 
 `defects-gen` is an **operations workspace for standing up a local, single-cluster
