@@ -173,11 +173,30 @@ rsync -avz -e "ssh -i ~/.ssh/<key>.pem" \
 > Keep the port-forward bound to `127.0.0.1` and tunnel over SSH — MinIO here is
 > unauthenticated-grade (`test`/`testtest`), so don't expose it on the host port.
 
+**Prefer an SFTP browser (FileZilla / Cyberduck / WinSCP)?** An SFTP client talks
+to the *host* over SSH, not to MinIO — so first stage the run(s) into a plain
+folder on the host, then browse to it:
+
+```bash
+# on the cluster host:
+./scripts/stage-for-sftp.sh <RUN_NAME> [RUN_NAME…]
+```
+
+It downloads each run to `outputs/<RUN>/anomaly/` and prints the exact SFTP
+connection details (host, port, user, and the absolute path to browse). In
+FileZilla use **Protocol: SFTP**, **Logon Type: Key file** (your `.pem`), then
+drag the folder down.
+
 ## 🗂️ Layout
 
 - `scripts/pull-outputs.sh` — pull a DIG run's generated images + labels out of
   MinIO onto the host (handles the `minio.osmo` hosts entry + `kubectl
   port-forward`), ready to rsync to your workstation. See the section above.
+- `scripts/stage-for-sftp.sh` — same extraction, but staged for an SFTP browser:
+  downloads one or more runs to `outputs/` and prints the FileZilla/Cyberduck
+  connection details.
+- `scripts/lib/minio.sh` — shared MinIO wiring sourced by both scripts (hosts
+  entry, port-forward lifecycle, config).
 - `kind-osmo-cluster-config.yaml` — kind cluster definition (control-plane + 5 workers
   with `node_group` labels; the `service` worker maps host port 80 → NodePort 30080; the
   `data` worker host-mounts `/var/lib/osmo-minio` for durable S3 storage).

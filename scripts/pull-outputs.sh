@@ -4,13 +4,12 @@
 # in-cluster MinIO onto this host, ready to rsync to your workstation.
 #
 # Run this ON THE CLUSTER HOST (the box where the kind cluster lives). MinIO is
-# only reachable inside the cluster, so the osmo S3 client needs two things this
-# script wires up for you:
-#   1. a `minio.osmo` -> 127.0.0.1 entry in /etc/hosts (matches the osmo DATA
-#      credential's override_url), and
-#   2. a `kubectl port-forward` to svc/minio:9000.
-# It then pulls s3://osmo/dig/runs/<RUN>/anomaly/ to a local folder and prints
-# the rsync line to copy it down to your laptop.
+# only reachable inside the cluster, so this wires up the `minio.osmo` hosts
+# entry and a `kubectl port-forward` to svc/minio:9000, then pulls
+# s3://osmo/dig/runs/<RUN>/anomaly/ to a local folder and prints the rsync line
+# to copy it down to your laptop.
+#
+# Prefer an SFTP browser (FileZilla/Cyberduck)? Use scripts/stage-for-sftp.sh.
 #
 # Usage:
 #   scripts/pull-outputs.sh list                  # list available run names
@@ -26,68 +25,15 @@
 #
 set -euo pipefail
 
-NS="${NS:-osmo}"
-MINIO_SVC="${MINIO_SVC:-minio}"
-MINIO_PORT="${MINIO_PORT:-9000}"
-S3_BUCKET="${S3_BUCKET:-osmo}"
-DIG_PREFIX="${DIG_PREFIX:-dig/runs}"
-MINIO_HOST="minio.${NS}"                 # must match the osmo DATA credential override_url
-MINIO_USER="${MINIO_USER:-test}"
-MINIO_PASS="${MINIO_PASS:-testtest}"
+MINIO_TAG="pull-outputs"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+. "$SCRIPT_DIR/lib/minio.sh"
+
 MC_ALIAS="${MC_ALIAS:-defectsgen}"
-
 PNG_ONLY=0
-KEEP_FWD=0
-PF_PID=""
-STARTED_PF=0
-
-log() { printf '\033[0;36m[pull-outputs]\033[0m %s\n' "$*" >&2; }
-die() { printf '\033[0;31m[pull-outputs] ERROR:\033[0m %s\n' "$*" >&2; exit 1; }
 
 # Print the banner comment block (lines 3.. up to the first non-# line).
 usage() { awk 'NR>=3 && /^#/ { sub(/^# ?/, ""); print; next } NR>=3 { exit }' "$0"; }
-
-cleanup() {
-  if [ "$STARTED_PF" = 1 ] && [ "$KEEP_FWD" != 1 ] && [ -n "$PF_PID" ]; then
-    kill "$PF_PID" 2>/dev/null || true
-    log "stopped the port-forward we started (pid $PF_PID)"
-  fi
-}
-trap cleanup EXIT
-
-# Readiness check via MinIO's health endpoint, falling back to a raw TCP probe.
-minio_ready() {
-  if command -v curl >/dev/null 2>&1; then
-    curl -sf -o /dev/null "http://127.0.0.1:${MINIO_PORT}/minio/health/ready"
-  else
-    (exec 3<>"/dev/tcp/127.0.0.1/${MINIO_PORT}") 2>/dev/null
-  fi
-}
-
-ensure_hosts() {
-  if ! grep -qE "^[^#]*[[:space:]]${MINIO_HOST}([[:space:]]|\$)" /etc/hosts; then
-    log "adding '127.0.0.1 ${MINIO_HOST}' to /etc/hosts (needs sudo)"
-    echo "127.0.0.1 ${MINIO_HOST}" | sudo tee -a /etc/hosts >/dev/null
-  fi
-}
-
-ensure_forward() {
-  if minio_ready; then
-    log "MinIO already reachable on 127.0.0.1:${MINIO_PORT} — reusing it"
-    return
-  fi
-  command -v kubectl >/dev/null 2>&1 || die "kubectl not found — run this on the cluster host."
-  log "starting: kubectl port-forward -n ${NS} svc/${MINIO_SVC} ${MINIO_PORT}:${MINIO_PORT}"
-  kubectl port-forward -n "$NS" "svc/${MINIO_SVC}" "${MINIO_PORT}:${MINIO_PORT}" \
-    >/tmp/pull-outputs-pf.log 2>&1 &
-  PF_PID=$!
-  STARTED_PF=1
-  for _ in $(seq 1 30); do
-    if minio_ready; then log "port-forward ready"; return; fi
-    sleep 1
-  done
-  die "port-forward did not become ready — see /tmp/pull-outputs-pf.log"
-}
 
 print_rsync_hint() {
   local dest="$1" abspath run_tag
@@ -105,38 +51,38 @@ EOF
 }
 
 cmd_list() {
-  ensure_hosts
-  ensure_forward
-  command -v osmo >/dev/null 2>&1 || die "osmo CLI not found."
-  log "runs under s3://${S3_BUCKET}/${DIG_PREFIX}/ :"
+  minio_ensure_hosts
+  minio_ensure_forward
+  command -v osmo >/dev/null 2>&1 || mdie "osmo CLI not found."
+  mlog "runs under s3://${S3_BUCKET}/${DIG_PREFIX}/ :"
   osmo data list "s3://${S3_BUCKET}/${DIG_PREFIX}/"
 }
 
 cmd_pull() {
   local run="${1:-}" dest="${2:-outputs/${1:-}/anomaly}"
-  [ -n "$run" ] || die "no run name given. Try: scripts/pull-outputs.sh list"
-  ensure_hosts
-  ensure_forward
+  [ -n "$run" ] || mdie "no run name given. Try: scripts/pull-outputs.sh list"
+  minio_ensure_hosts
+  minio_ensure_forward
 
   local key="${S3_BUCKET}/${DIG_PREFIX}/${run}/anomaly"
   mkdir -p "$dest"
 
   if [ "$PNG_ONLY" = 1 ]; then
-    command -v mc >/dev/null 2>&1 || die "--png-only needs the MinIO client (mc). Install it or drop the flag."
+    command -v mc >/dev/null 2>&1 || mdie "--png-only needs the MinIO client (mc). Install it or drop the flag."
     mc alias set "$MC_ALIAS" "http://127.0.0.1:${MINIO_PORT}" "$MINIO_USER" "$MINIO_PASS" >/dev/null
-    log "copying *.png from s3://${key} -> ${dest}/ (flattened)"
+    mlog "copying *.png from s3://${key} -> ${dest}/ (flattened)"
     mc find "${MC_ALIAS}/${key}" --name '*.png' --exec "mc cp {} ${dest}/"
   else
-    command -v osmo >/dev/null 2>&1 || die "osmo CLI not found."
-    log "downloading s3://${key} -> ${dest}/"
+    command -v osmo >/dev/null 2>&1 || mdie "osmo CLI not found."
+    mlog "downloading s3://${key} -> ${dest}/"
     osmo data download "s3://${key}" "${dest}/"
   fi
 
-  log "done -> ${dest}"
+  mlog "done -> ${dest}"
   print_rsync_hint "$dest"
 }
 
-# ── arg parsing ──────────────────────────────────────────────────────────
+# ── arg parsing (KEEP_FWD is defined in lib/minio.sh) ────────────────────
 positional=()
 while [ $# -gt 0 ]; do
   case "$1" in
@@ -144,7 +90,7 @@ while [ $# -gt 0 ]; do
     --keep-forward) KEEP_FWD=1; shift ;;
     -h|--help)      usage; exit 0 ;;
     --) shift; while [ $# -gt 0 ]; do positional+=("$1"); shift; done ;;
-    -*) die "unknown flag: $1" ;;
+    -*) mdie "unknown flag: $1" ;;
     *)  positional+=("$1"); shift ;;
   esac
 done
