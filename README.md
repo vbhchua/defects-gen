@@ -133,8 +133,70 @@ Measured on 1× RTX PRO 6000 / 62 GiB host — full tables in [`TIMINGS.md`](TIM
 > The input download is a fixed cost per run — larger `num_sdg` amortizes it
 > (300 images ≈ 1.7 h, not 10× the 31-min run).
 
+## 📥 Getting the images to your workstation
+
+The generated images live as S3 objects in the in-cluster MinIO, at
+`s3://osmo/dig/runs/<RUN_NAME>/anomaly/` — the generated defect PNGs plus masks,
+crops, annotated overlays, `SDG_result.csv`, and DAFT-v3 labels (~280 objects,
+~14 MB for a 30-image run). MinIO is reachable only from inside the cluster, so
+pull through the S3 API — **don't** `rsync` its on-disk directory
+(`/var/lib/osmo-minio`): `minio/minio` stores each object as an `xl.meta` +
+`part.1` pair, not a plain `.png`.
+
+**Step 1 — on the cluster host (the EC2 box)**, fetch a run's outputs with the
+helper (it wires up the `minio.osmo` hosts entry + the `kubectl port-forward`
+that `osmo data` needs, then downloads to `outputs/<RUN_NAME>/anomaly/`):
+
+```bash
+./scripts/pull-outputs.sh list                 # list available run names
+./scripts/pull-outputs.sh <RUN_NAME>           # download that run's anomaly tree
+./scripts/pull-outputs.sh --png-only <RUN_NAME>  # just the PNGs (needs mc)
+```
+
+**Step 2 — on your laptop**, copy the folder down (the script prints this line
+with the path filled in):
+
+```bash
+rsync -avz -e "ssh -i ~/.ssh/<key>.pem" \
+  ubuntu@<EC2_IP>:~/defects-gen/outputs/<RUN_NAME>/anomaly/ ./<RUN_NAME>/
+```
+
+> **One-hop alternative** (straight to the laptop, no staging copy) — keep a
+> host-side `kubectl port-forward -n osmo svc/minio 9000:9000` running (e.g.
+> `./scripts/pull-outputs.sh --keep-forward <RUN>`), then from the laptop tunnel
+> and mirror with [`mc`](https://min.io/docs/minio/linux/reference/minio-mc.html):
+> ```bash
+> ssh -N -L 9000:localhost:9000 ubuntu@<EC2_IP>            # keep running
+> mc alias set ec2 http://127.0.0.1:9000 test testtest
+> mc mirror ec2/osmo/dig/runs/<RUN_NAME>/anomaly ./<RUN_NAME>
+> ```
+> Keep the port-forward bound to `127.0.0.1` and tunnel over SSH — MinIO here is
+> unauthenticated-grade (`test`/`testtest`), so don't expose it on the host port.
+
+**Prefer an SFTP browser (FileZilla / Cyberduck / WinSCP)?** An SFTP client talks
+to the *host* over SSH, not to MinIO — so first stage the run(s) into a plain
+folder on the host, then browse to it:
+
+```bash
+# on the cluster host:
+./scripts/stage-for-sftp.sh <RUN_NAME> [RUN_NAME…]
+```
+
+It downloads each run to `outputs/<RUN>/anomaly/` and prints the exact SFTP
+connection details (host, port, user, and the absolute path to browse). In
+FileZilla use **Protocol: SFTP**, **Logon Type: Key file** (your `.pem`), then
+drag the folder down.
+
 ## 🗂️ Layout
 
+- `scripts/pull-outputs.sh` — pull a DIG run's generated images + labels out of
+  MinIO onto the host (handles the `minio.osmo` hosts entry + `kubectl
+  port-forward`), ready to rsync to your workstation. See the section above.
+- `scripts/stage-for-sftp.sh` — same extraction, but staged for an SFTP browser:
+  downloads one or more runs to `outputs/` and prints the FileZilla/Cyberduck
+  connection details.
+- `scripts/lib/minio.sh` — shared MinIO wiring sourced by both scripts (hosts
+  entry, port-forward lifecycle, config).
 - `kind-osmo-cluster-config.yaml` — kind cluster definition (control-plane + 5 workers
   with `node_group` labels; the `service` worker maps host port 80 → NodePort 30080; the
   `data` worker host-mounts `/var/lib/osmo-minio` for durable S3 storage).
