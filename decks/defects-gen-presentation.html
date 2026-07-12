@@ -261,7 +261,7 @@
             <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
           <div class="card r"><span class="pill ok">SHIPPED</span><div class="ic">🔬</div>
             <h3>Failure forensics</h3>
-            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM spirals, bucket wipes, token traps, multipart corruption.</p></div>
+            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM retry loops, bucket loss on reboot, token auth failures, multipart upload errors.</p></div>
           <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🧪</div>
             <h3>Detectors trained on it</h3>
             <p><b>RF-DETR Large</b> finetuned locally on the metal &amp; glass outputs — 0.85 / 0.97 mAP@50 on held-out backgrounds. PCBA next; cookbooks already in the skill.</p></div>
@@ -302,7 +302,7 @@
             </div>
           </div>
         </div>
-        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template the cluster kept fighting us over (three of the four war stories live there).</div>
+        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes on the next slides.</div>
       </section>
 
       <!-- 4 · ONE RUN, END TO END (interactive) -->
@@ -478,16 +478,16 @@
           <div class="rule"></div>
         </div>
         <div class="chips">
-          <div class="chip r"><h3><span class="k">›</span> The 18-minute OOM spiral <span class="sig">exit 2137</span></h3>
+          <div class="chip r"><h3><span class="k">›</span> OOM from missing S3 env <span class="sig">exit 2137</span></h3>
             <p>Task pods get <b>no S3 env</b> from the chart → boto3 falls back to virtual-hosted DNS → unresolvable → ctrl leaks <b>13 MB/s</b> against a 24 h retry window until cgroup OOM. Fix: endpoint + path-style env in <b>POD_TEMPLATE</b>, both containers.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> The vanishing bucket <span class="sig">exit 2014</span></h3>
-            <p>The chart's localstack data dir was bind-mounted to host <b>/tmp</b> — wiped every reboot, and the bucket only exists via an install-time hook. Every workflow died in 3 s; even the logs API returned <code>NoSuchBucket</code>.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> The token that half-works <span class="sig">KeyError</span></h3>
-            <p>An HF <b>OAuth token</b> reads gated repos (probes pass!) but crashes in-pod <code>hf auth login</code> — no <code>accessToken</code> in whoami. Bonus trap: OSMO <b>snapshots credentials at submit time</b> — fix creds <i>before</i> submitting.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> Multipart roulette <span class="sig">NoSuchUpload</span></h3>
-            <p>localstack-persist write-locks the server every 10 s; under an 80 GB upload, stalled clients retry <code>CompleteMultipartUpload</code> and race its part-cleanup. Upload regressed 40%→34% forever. Fix: <b>replace with MinIO</b> — zero errors, first try.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> Bucket lost on reboot <span class="sig">exit 2014</span></h3>
+            <p>The chart's localstack data dir was bind-mounted to host <b>/tmp</b> — wiped every reboot, and the bucket only exists via an install-time hook. Every workflow failed within 3 s; the logs API also returned <code>NoSuchBucket</code>.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> OAuth token fails in-pod <span class="sig">KeyError</span></h3>
+            <p>An HF <b>OAuth token</b> reads gated repos (probes pass) but fails in-pod <code>hf auth login</code> — no <code>accessToken</code> in whoami. Related: OSMO <b>snapshots credentials at submit time</b> — fix credentials <i>before</i> submitting.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> Multipart upload failures <span class="sig">NoSuchUpload</span></h3>
+            <p>localstack-persist write-locks the server every 10 s; under an 80 GB upload, stalled clients retry <code>CompleteMultipartUpload</code> and race its part-cleanup. Upload progress regressed 40%→34% indefinitely. Fix: <b>replace with MinIO</b> — no errors.</p></div>
         </div>
-        <div class="footnote r">Full forensics with logs and timelines: PROGRESS.md · every signature is now a 30-second diagnosis.</div>
+        <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
       <!-- 12 · TIMINGS -->
@@ -504,11 +504,11 @@
         </div>
         <div class="vs r">
           <div class="vsbox bad"><h3>✗ localstack (chart default)</h3>
-            <p>Same 80.6 GB upload: <b>died at 40%</b> after 26 min — <code>NoSuchUpload</code> on every multi-GB file, progress moving backwards, killed by the 1 h timeout. Plus: bucket lost on every reboot.</p></div>
+            <p>Same 80.6 GB upload: <b>failed at 40%</b> after 26 min — <code>NoSuchUpload</code> on every multi-GB file, progress regressing, stopped by the 1 h timeout. Bucket also lost on every reboot.</p></div>
           <div class="vsbox good"><h3>✓ MinIO (this repo)</h3>
             <p>Identical upload: <b>completed in 22:40</b> at 63.6 MB/s average (peaks 305 MB/s), <b>zero</b> multipart errors, data durable on the host's 1 TB volume across reboots.</p></div>
         </div>
-        <div class="amort r">📈 <b>Scaling:</b> the 22-min input pull is a <b>fixed</b> cost — 30 images cost ~16 s/image end-to-end, but ~300 images ≈ <b>1.7 h</b>, not 10× the 31-min run. Batch big.</div>
+        <div class="amort r"><b>Scaling:</b> the 22-min input pull is a <b>fixed</b> cost — 30 images cost ~16 s/image end-to-end, but ~300 images ≈ <b>1.7 h</b>, not 10× the 31-min run. Larger batches amortize the fixed cost.</div>
       </section>
 
       <!-- 13 · NEXT STEPS -->
