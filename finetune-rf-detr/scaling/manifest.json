@@ -1,0 +1,95 @@
+{
+  "seed": 42,
+  "classes": [
+    "MT_Blowhole",
+    "MT_Break",
+    "MT_Crack",
+    "MT_Fray",
+    "MT_Uneven"
+  ],
+  "dedup": {
+    "exact_dup": 0
+  },
+  "sizes": {
+    "120": {
+      "quota": {
+        "train": 84,
+        "valid": 18,
+        "test": 18
+      },
+      "achieved": {
+        "train": {
+          "MT_Blowhole": 84,
+          "MT_Break": 84,
+          "MT_Crack": 84,
+          "MT_Fray": 84,
+          "MT_Uneven": 84
+        },
+        "valid": {
+          "MT_Blowhole": 18,
+          "MT_Break": 18,
+          "MT_Crack": 18,
+          "MT_Fray": 18,
+          "MT_Uneven": 18
+        },
+        "test": {
+          "MT_Blowhole": 18,
+          "MT_Break": 18,
+          "MT_Crack": 18,
+          "MT_Fray": 18,
+          "MT_Uneven": 18
+        }
+      },
+      "images": {
+        "train": 420,
+        "valid": 90,
+        "test": 90
+      },
+      "boxes": {
+        "train": 447,
+        "valid": 99,
+        "test": 96
+      }
+    },
+    "240": {
+      "quota": {
+        "train": 168,
+        "valid": 36,
+        "test": 36
+      },
+      "achieved": {
+        "train": {
+          "MT_Blowhole": 168,
+          "MT_Break": 168,
+          "MT_Crack": 168,
+          "MT_Fray": 153,
+          "MT_Uneven": 168
+        },
+        "valid": {
+          "MT_Blowhole": 24,
+          "MT_Break": 36,
+          "MT_Crack": 36,
+          "MT_Fray": 36,
+          "MT_Uneven": 21
+        },
+        "test": {
+          "MT_Blowhole": 30,
+          "MT_Break": 27,
+          "MT_Crack": 27,
+          "MT_Fray": 36,
+          "MT_Uneven": 36
+        }
+      },
+      "images": {
+        "train": 825,
+        "valid": 153,
+        "test": 156
+      },
+      "boxes": {
+        "train": 894,
+        "valid": 173,
+        "test": 165
+      }
+    }
+  }
+}

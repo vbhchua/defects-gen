@@ -245,3 +245,5 @@ finetune-rf-detr/dataset/
 finetune-rf-detr/dataset_glass/
 finetune-rf-detr/output/
 finetune-rf-detr/output_glass/
+finetune-rf-detr/scaling/dataset_*/
+finetune-rf-detr/scaling/output_*/
