@@ -94,7 +94,37 @@ imaging) and the model is close to saturating mAP@50 on it. Remaining headroom
 is small-defect recall and box tightness. As with metal, the decisive next
 validation is performance on **real** (non-synthetic) defect images.
 
-## 5. Reproduce
+## 5. Real-world sanity check (added later on 2026-07-12)
+
+Test set: the **original Roboflow mobile-screen export** that seeded DIG's
+glass use case (recovered from `s3://osmo/dig/uploads/glass-zip/`): 300 real
+defect images / 636 boxes with the export's own annotations, remapped to the
+model's classes. "Unseen" (285 imgs / 607 boxes) excludes the 15 images whose
+masks/anomalies DIG used; results are within half a point of the full set.
+
+| Set | mAP@50:95 | mAP@50 | mAP@75 | AR@100 |
+|---|---|---|---|---|
+| Synthetic test (reference) | 0.776 | 0.966 | 0.891 | 0.819 |
+| **Real, unseen** | **0.290** | **0.563** | 0.279 | 0.480 |
+
+Per-class on real (unseen): **oil 0.949 AP@50 / 0.653 AP@50:95** — near-perfect
+transfer; **stain 0.421 / 0.096**; **scratch 0.321 / 0.120**.
+
+Reading (`eval_glass/real_predictions.png`, `eval_glass/metrics_real.json`):
+
+- Transfer is substantially better than the metal use case (0.563 vs ~0.39
+  real mAP@50) — plausibly because the synthetic backgrounds *are* real phone
+  photos from this same dataset, so only the defect appearance is synthetic.
+- **Oil is production-grade on real data already.** Scratch/stain are found at
+  moderate rates but with **poor box quality** (AP@75 collapses to ~0.1–0.28):
+  real scratches are long, thin and often annotated as larger regions than the
+  synthetic point-defect style the model learned. Some real oil smudges are
+  classified as stain (appearance confusion the synthetic set never taught).
+- Same conclusion as metal: synthetic-only training carries real signal but
+  isn't deployable alone; mixing real images and diversifying synthetic defect
+  geometry (especially elongated scratches) are the next levers.
+
+## 6. Reproduce
 
 ```bash
 cd /home/ubuntu/defects-gen/finetune-rf-detr
