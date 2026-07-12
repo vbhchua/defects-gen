@@ -1,0 +1,135 @@
+{
+  "seed": 42,
+  "classes": [
+    "MT_Blowhole",
+    "MT_Break",
+    "MT_Crack",
+    "MT_Fray",
+    "MT_Uneven"
+  ],
+  "dedup": {
+    "exact_dup": 0
+  },
+  "sizes": {
+    "120": {
+      "quota": {
+        "train": 84,
+        "valid": 18,
+        "test": 18
+      },
+      "achieved": {
+        "train": {
+          "MT_Blowhole": 84,
+          "MT_Break": 84,
+          "MT_Crack": 84,
+          "MT_Fray": 84,
+          "MT_Uneven": 84
+        },
+        "valid": {
+          "MT_Blowhole": 18,
+          "MT_Break": 18,
+          "MT_Crack": 18,
+          "MT_Fray": 18,
+          "MT_Uneven": 18
+        },
+        "test": {
+          "MT_Blowhole": 18,
+          "MT_Break": 18,
+          "MT_Crack": 18,
+          "MT_Fray": 18,
+          "MT_Uneven": 18
+        }
+      },
+      "images": {
+        "train": 420,
+        "valid": 90,
+        "test": 90
+      },
+      "boxes": {
+        "train": 445,
+        "valid": 98,
+        "test": 95
+      }
+    },
+    "240": {
+      "quota": {
+        "train": 168,
+        "valid": 36,
+        "test": 36
+      },
+      "achieved": {
+        "train": {
+          "MT_Blowhole": 168,
+          "MT_Break": 168,
+          "MT_Crack": 168,
+          "MT_Fray": 168,
+          "MT_Uneven": 168
+        },
+        "valid": {
+          "MT_Blowhole": 36,
+          "MT_Break": 36,
+          "MT_Crack": 36,
+          "MT_Fray": 36,
+          "MT_Uneven": 36
+        },
+        "test": {
+          "MT_Blowhole": 36,
+          "MT_Break": 36,
+          "MT_Crack": 36,
+          "MT_Fray": 36,
+          "MT_Uneven": 36
+        }
+      },
+      "images": {
+        "train": 840,
+        "valid": 180,
+        "test": 180
+      },
+      "boxes": {
+        "train": 904,
+        "valid": 196,
+        "test": 187
+      }
+    },
+    "360": {
+      "quota": {
+        "train": 252,
+        "valid": 54,
+        "test": 54
+      },
+      "achieved": {
+        "train": {
+          "MT_Blowhole": 252,
+          "MT_Break": 252,
+          "MT_Crack": 252,
+          "MT_Fray": 252,
+          "MT_Uneven": 252
+        },
+        "valid": {
+          "MT_Blowhole": 52,
+          "MT_Break": 48,
+          "MT_Crack": 48,
+          "MT_Fray": 52,
+          "MT_Uneven": 54
+        },
+        "test": {
+          "MT_Blowhole": 44,
+          "MT_Break": 54,
+          "MT_Crack": 54,
+          "MT_Fray": 48,
+          "MT_Uneven": 47
+        }
+      },
+      "images": {
+        "train": 1260,
+        "valid": 254,
+        "test": 247
+      },
+      "boxes": {
+        "train": 1366,
+        "valid": 276,
+        "test": 262
+      }
+    }
+  }
+}

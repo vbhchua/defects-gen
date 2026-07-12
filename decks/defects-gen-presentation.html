@@ -261,7 +261,7 @@
             <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
           <div class="card r"><span class="pill ok">SHIPPED</span><div class="ic">🔬</div>
             <h3>Failure forensics</h3>
-            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM spirals, bucket wipes, token traps, multipart corruption.</p></div>
+            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM retry loops, bucket loss on reboot, token auth failures, multipart upload errors.</p></div>
           <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🧪</div>
             <h3>Detectors trained on it</h3>
             <p><b>RF-DETR Large</b> finetuned locally on the metal &amp; glass outputs — 0.85 / 0.97 mAP@50 on held-out backgrounds. PCBA next; cookbooks already in the skill.</p></div>
@@ -302,7 +302,7 @@
             </div>
           </div>
         </div>
-        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template the cluster kept fighting us over (three of the four war stories live there).</div>
+        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes on the next slides.</div>
       </section>
 
       <!-- 4 · ONE RUN, END TO END (interactive) -->
@@ -372,10 +372,10 @@
         <div class="grid3">
           <div class="card r"><span class="pill ok">APACHE 2.0</span><div class="ic">🤖</div>
             <h3>RF-DETR Large</h3>
-            <p>Roboflow's SOTA real-time DETR (ICLR 2026): DINOv2 backbone, 33.9 M params, 704×704. Largest <b>permissively-licensed</b> variant — XL/2XL are PML 1.0.</p></div>
+            <p>Roboflow's real-time DETR (ICLR 2026): DINOv2 backbone, 33.9 M params, 704×704. Largest <b>Apache-2.0-licensed</b> variant — XL/2XL are PML 1.0.</p></div>
           <div class="card r"><span class="pill ok">FREE LABELS</span><div class="ic">🏷️</div>
             <h3>Boxes from masks</h3>
-            <p>DIG emits pixel masks, not boxes. Connected components on <code>original_mask</code> → COCO bboxes; class from the filename. <b>Zero manual annotation.</b></p></div>
+            <p>DIG emits pixel masks, not boxes. Connected components on <code>original_mask</code> → COCO bboxes; class from the filename. <b>No manual annotation needed.</b></p></div>
           <div class="card r"><span class="pill ok">NO LEAKAGE</span><div class="ic">✂️</div>
             <h3>Group splits</h3>
             <p>All images derive from just <b>20 base backgrounds</b> (20–45 variants each). Splits are grouped <b>by base image</b> — test backgrounds are never seen in training.</p></div>
@@ -385,7 +385,7 @@
           <div class="card r"><span class="pill ok">~10 MIN</span><div class="ic">⚡</div>
             <h3>Local finetune</h3>
             <p>Batch 16 @ 704², EMA, early stopping. <b>~10 min per model</b> on the same RTX PRO 6000 (peak 26 GiB) — the GPU that generated the data also trains on it.</p></div>
-          <div class="card r"><span class="pill ok">HONEST EVAL</span><div class="ic">📏</div>
+          <div class="card r"><span class="pill ok">HELD-OUT EVAL</span><div class="ic">📏</div>
             <h3>COCOeval + confusion</h3>
             <p>mAP@50 / @50:95 overall &amp; per class on the held-out split, confusion matrix, latency benchmark. Valid→test gap stays within a few points.</p></div>
         </div>
@@ -405,12 +405,12 @@
           <div class="tstat"><div class="n">2×10<small> min</small></div><div class="l"><b>Total training</b> — both models, local, early-stopped from COCO weights</div></div>
         </div>
         <div class="vs r">
-          <div class="vsbox good"><h3>✓ Glass — near-saturated</h3>
-            <p><b>Zero cross-class confusion</b>: oil 1.00 AP@50 (45/45), scratch &amp; stain 0.95. All 9 errors are missed tiny defects or box tightness on faint thin scratches — never a wrong class.</p></div>
+          <div class="vsbox good"><h3>✓ Glass — 0.97 mAP@50</h3>
+            <p><b>No cross-class confusion</b>: oil 1.00 AP@50 (45/45), scratch &amp; stain 0.95. All 9 errors are missed small defects or loose boxes on faint thin scratches — none are a wrong class.</p></div>
           <div class="vsbox bad"><h3>✗ Metal — MT_Break lags</h3>
             <p>Blowhole/Fray/Uneven at 0.92–0.93 AP@50, but <b>MT_Break 0.67</b> — low-contrast smudges: 8/26 missed, most false positives. It also had only 2 valid-split samples; more Break data is the fix.</p></div>
         </div>
-        <div class="amort r">🎯 <b>Signal:</b> the small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) shows the detectors generalize across backgrounds — the group split kept the eval honest. Next gate: real, non-synthetic defect images.</div>
+        <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across backgrounds rather than memorizing them. Next: evaluation on real, non-synthetic defect images.</div>
       </section>
 
       <!-- 8 · FINETUNE: QUALITATIVE -->
@@ -432,7 +432,45 @@
         </div>
       </section>
 
-      <!-- 9 · WAR STORIES -->
+      <!-- 9 · SCALING STUDY -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">New · Data-scaling study</div>
+          <h2>Scaling synthetic data: 120 / 240 / 360 per class</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="tgrid r">
+          <div class="tstat"><div class="n">0.72→0.80</div><div class="l"><b>Synthetic test</b> mAP@50:95 rises with each step in training data</div></div>
+          <div class="tstat"><div class="n" style="color:var(--bad)">0.40→0.35</div><div class="l"><b>Real photos</b> — the trend reverses: the 120/class model transfers best</div></div>
+          <div class="tstat"><div class="n">20</div><div class="l"><b>shared base backgrounds</b> across all datasets limit diversity, regardless of image count</div></div>
+        </div>
+        <div class="shot r" style="text-align:left">
+          <img src="../docs/images/rfdetr_scaling_curves.png" alt="synthetic vs real scaling curves" style="display:block;max-width:100%;height:auto;max-height:285px;margin:0 auto;border-radius:8px">
+          <div class="cap">Three RF-DETR Large models · nested datasets from one num_sdg=1800 DIG run · identical training recipe<small>past ~120 images/class from the same 20 backgrounds, synthetic metrics improve while real-world transfer declines</small></div>
+        </div>
+      </section>
+
+      <!-- 10 · SIM-TO-REAL -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">New · Sanity check on real data</div>
+          <h2>Sim-to-real transfer: results on real photos</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="vs r">
+          <div class="vsbox bad"><h3>Metal — 0.39 real mAP@50 (vs 0.93 synthetic)</h3>
+            <p>386 real Magnetic Tile photos. Recall holds (AR ~0.6) but precision and box quality drop. <b>Crack transfers worst (0.07–0.10 AP@50)</b> — real hairline cracks differ from the synthetic renders. Both background and defect are synthetic here.</p></div>
+          <div class="vsbox good"><h3>Glass — 0.56 real mAP@50 (vs 0.97 synthetic)</h3>
+            <p>300 real mobile-screen photos. <b>Oil transfers well: 0.949 AP@50 real.</b> Scratch and stain are detected but boxed loosely — real elongated scratches differ from the synthetic point-defect shapes.</p></div>
+        </div>
+        <div class="shot r" style="text-align:left;margin-top:16px">
+          <img src="../docs/images/rfdetr_glass_real_pairs.png" alt="glass model predictions on real phone photos" style="display:block;max-width:100%;height:auto;max-height:220px;margin:0 auto;border-radius:8px">
+          <div class="cap">Glass model on real photos — GT vs prediction<small>stain found (0.79) · scratches found but boxed loosely · one real oil smudge misread as stain</small></div>
+        </div>
+        <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
+      </section>
+
+      <!-- 11 · WAR STORIES -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The findings</div>
@@ -440,19 +478,19 @@
           <div class="rule"></div>
         </div>
         <div class="chips">
-          <div class="chip r"><h3><span class="k">›</span> The 18-minute OOM spiral <span class="sig">exit 2137</span></h3>
+          <div class="chip r"><h3><span class="k">›</span> OOM from missing S3 env <span class="sig">exit 2137</span></h3>
             <p>Task pods get <b>no S3 env</b> from the chart → boto3 falls back to virtual-hosted DNS → unresolvable → ctrl leaks <b>13 MB/s</b> against a 24 h retry window until cgroup OOM. Fix: endpoint + path-style env in <b>POD_TEMPLATE</b>, both containers.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> The vanishing bucket <span class="sig">exit 2014</span></h3>
-            <p>The chart's localstack data dir was bind-mounted to host <b>/tmp</b> — wiped every reboot, and the bucket only exists via an install-time hook. Every workflow died in 3 s; even the logs API returned <code>NoSuchBucket</code>.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> The token that half-works <span class="sig">KeyError</span></h3>
-            <p>An HF <b>OAuth token</b> reads gated repos (probes pass!) but crashes in-pod <code>hf auth login</code> — no <code>accessToken</code> in whoami. Bonus trap: OSMO <b>snapshots credentials at submit time</b> — fix creds <i>before</i> submitting.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> Multipart roulette <span class="sig">NoSuchUpload</span></h3>
-            <p>localstack-persist write-locks the server every 10 s; under an 80 GB upload, stalled clients retry <code>CompleteMultipartUpload</code> and race its part-cleanup. Upload regressed 40%→34% forever. Fix: <b>replace with MinIO</b> — zero errors, first try.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> Bucket lost on reboot <span class="sig">exit 2014</span></h3>
+            <p>The chart's localstack data dir was bind-mounted to host <b>/tmp</b> — wiped every reboot, and the bucket only exists via an install-time hook. Every workflow failed within 3 s; the logs API also returned <code>NoSuchBucket</code>.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> OAuth token fails in-pod <span class="sig">KeyError</span></h3>
+            <p>An HF <b>OAuth token</b> reads gated repos (probes pass) but fails in-pod <code>hf auth login</code> — no <code>accessToken</code> in whoami. Related: OSMO <b>snapshots credentials at submit time</b> — fix credentials <i>before</i> submitting.</p></div>
+          <div class="chip r"><h3><span class="k">›</span> Multipart upload failures <span class="sig">NoSuchUpload</span></h3>
+            <p>localstack-persist write-locks the server every 10 s; under an 80 GB upload, stalled clients retry <code>CompleteMultipartUpload</code> and race its part-cleanup. Upload progress regressed 40%→34% indefinitely. Fix: <b>replace with MinIO</b> — no errors.</p></div>
         </div>
-        <div class="footnote r">Full forensics with logs and timelines: PROGRESS.md · every signature is now a 30-second diagnosis.</div>
+        <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
-      <!-- 10 · TIMINGS -->
+      <!-- 12 · TIMINGS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Measured, not estimated</div>
@@ -466,14 +504,14 @@
         </div>
         <div class="vs r">
           <div class="vsbox bad"><h3>✗ localstack (chart default)</h3>
-            <p>Same 80.6 GB upload: <b>died at 40%</b> after 26 min — <code>NoSuchUpload</code> on every multi-GB file, progress moving backwards, killed by the 1 h timeout. Plus: bucket lost on every reboot.</p></div>
+            <p>Same 80.6 GB upload: <b>failed at 40%</b> after 26 min — <code>NoSuchUpload</code> on every multi-GB file, progress regressing, stopped by the 1 h timeout. Bucket also lost on every reboot.</p></div>
           <div class="vsbox good"><h3>✓ MinIO (this repo)</h3>
             <p>Identical upload: <b>completed in 22:40</b> at 63.6 MB/s average (peaks 305 MB/s), <b>zero</b> multipart errors, data durable on the host's 1 TB volume across reboots.</p></div>
         </div>
-        <div class="amort r">📈 <b>Scaling:</b> the 22-min input pull is a <b>fixed</b> cost — 30 images cost ~16 s/image end-to-end, but ~300 images ≈ <b>1.7 h</b>, not 10× the 31-min run. Batch big.</div>
+        <div class="amort r"><b>Scaling:</b> the 22-min input pull is a <b>fixed</b> cost — 30 images cost ~16 s/image end-to-end, but ~300 images ≈ <b>1.7 h</b>, not 10× the 31-min run. Larger batches amortize the fixed cost.</div>
       </section>
 
-      <!-- 11 · NEXT STEPS -->
+      <!-- 13 · NEXT STEPS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Where it goes</div>
@@ -482,7 +520,7 @@
         </div>
         <div class="steps-list">
           <div class="nstep r"><div class="num">1</div><div><div class="nt">Scale the metal dataset</div><div class="nd">Re-submit with larger <code>num_sdg</code> — the fixed input pull amortizes, so big batches are cheap per image.</div></div></div>
-          <div class="nstep r"><div class="num">2</div><div><div class="nt">Validate the detectors on real defect images</div><div class="nd">Metal &amp; glass RF-DETR models score 0.85 / 0.97 mAP@50 on synthetic held-out data — the decisive test is real AOI captures. A small real test set is the missing piece.</div></div></div>
+          <div class="nstep r"><div class="num">2</div><div><div class="nt">Close the sim-to-real gap</div><div class="nd">Real-data validation is done (0.39 / 0.56 real mAP@50). Next: mix a small set of real images into training, generate from <b>new base backgrounds</b>, and fix thin-defect geometry (cracks, elongated scratches).</div></div></div>
           <div class="nstep r"><div class="num">3</div><div><div class="nt">Finetune from scratch</div><div class="nd">Train a custom checkpoint on our own defect data (<code>use_pretrained_checkpoint=false</code>) — the single GPU holds the job for its duration.</div></div></div>
           <div class="nstep opt r"><div class="num">4</div><div><div class="nt">PCBA Day 0 — full synthetic pipeline</div><div class="nd">USD render → image-edit → AnomalyGen. Needs an image-edit endpoint decision first: the pool has 1 GPU, so a local NIM can't run beside a DIG job.</div></div></div>
           <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
