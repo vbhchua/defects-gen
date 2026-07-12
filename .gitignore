@@ -235,3 +235,13 @@ outputs/
 # Agent/editor local state.
 .claude/
 nohup.out
+
+# DIG datasets pulled from S3 (1 GB+): regenerate via `osmo data download`.
+data/
+
+# RF-DETR finetuning: derived COCO datasets, checkpoints and training logs are
+# reproducible via finetune-rf-detr/{build_dataset,train}.py — not committed.
+finetune-rf-detr/dataset/
+finetune-rf-detr/dataset_glass/
+finetune-rf-detr/output/
+finetune-rf-detr/output_glass/
