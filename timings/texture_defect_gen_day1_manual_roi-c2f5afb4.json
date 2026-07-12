@@ -1,0 +1,106 @@
+{
+  "run": {
+    "name": "texture_defect_gen_day1_manual_roi-c2f5afb4",
+    "workflow_id": "texture_defect_gen_day1_manual_roi-3",
+    "flow": "Day 1 — Infer + Label (manual ROI)",
+    "usecase": "metal_surface",
+    "date": "2026-07-12",
+    "status": "COMPLETED",
+    "exit_code": 0,
+    "parameters": {
+      "num_sdg": 600,
+      "use_pretrained_checkpoint": true,
+      "checkpoint_step": 10000,
+      "model_size": "2b",
+      "infer_memory": "48Gi",
+      "anomaly_types": [
+        ["metal_surface", "MT_Blowhole"],
+        ["metal_surface", "MT_Break"],
+        ["metal_surface", "MT_Crack"],
+        ["metal_surface", "MT_Fray"],
+        ["metal_surface", "MT_Uneven"]
+      ]
+    },
+    "environment": {
+      "gpu": "1x NVIDIA RTX PRO 6000 (Blackwell)",
+      "pool": "default",
+      "s3_backend": "MinIO (minio.osmo:9000)",
+      "node_memory": "62Gi"
+    }
+  },
+  "wall_clock": {
+    "submitted_at": "2026-07-12T04:06:24Z",
+    "task_started_at": "2026-07-12T04:06:39Z",
+    "task_ended_at": "2026-07-12T04:56:08Z",
+    "wall_clock_seconds": 2969,
+    "wall_clock_human": "49m 29s",
+    "submit_to_end_seconds": 2984
+  },
+  "phases": {
+    "input_download_and_prep": {
+      "seconds": 1086,
+      "human": "~18.1 min",
+      "note": "Task start (04:06:39) to run_sdg launch (~04:24:45, derived). Dominated by pulling the 80.6 GB pretrained tree from MinIO; also includes checkpoint staging/validation and AMP prep_testcase for 600 entries.",
+      "derived": true
+    },
+    "sdg_setup": {
+      "seconds": 16.0,
+      "source": "timing_summary.json setup_seconds"
+    },
+    "model_init": {
+      "seconds": 436.4,
+      "human": "7.3 min",
+      "source": "timing_summary.json model_init_seconds"
+    },
+    "generation": {
+      "seconds": 1119.7,
+      "human": "18.7 min",
+      "ended_at": "2026-07-12T04:50:57Z",
+      "seconds_per_image": 1.866,
+      "images": 600,
+      "source": "timing_summary.json generation_seconds"
+    },
+    "verify_and_daft_labeling": {
+      "seconds": 291,
+      "human": "~4.9 min",
+      "note": "Last generated image (04:50:57) to 'Inference complete' (04:55:50): verify_output.sh + convert_to_daft_format.py over 600 samples.",
+      "derived": true
+    },
+    "output_upload": {
+      "seconds": 11,
+      "bytes_uploaded": 258000000,
+      "rate": "~28-35 MB/s",
+      "window": "04:55:50 -> 04:56:01"
+    }
+  },
+  "output": {
+    "url": "s3://osmo/dig/runs/texture_defect_gen_day1_manual_roi-c2f5afb4/anomaly",
+    "local_copy": "data/texture_defect_gen_day1_manual_roi-c2f5afb4/",
+    "generated_images": 600,
+    "images_per_defect_type": 120,
+    "total_files": 5610,
+    "total_size": "274M",
+    "upload_size": "258M"
+  },
+  "throughput": {
+    "effective_images_per_minute_wall_clock": 12.1,
+    "marginal_seconds_per_image_gpu": 1.87,
+    "wall_clock_seconds_per_image": 4.95
+  },
+  "comparison_with_first_run": {
+    "first_run": "texture_defect_gen_day1_manual_roi-51f57bdd (num_sdg=30, 2026-07-02)",
+    "num_sdg": {"first": 30, "this": 600, "factor": 20},
+    "wall_clock_seconds": {"first": 1865, "this": 2969, "factor": 1.59},
+    "generation_seconds": {"first": 59.5, "this": 1119.7},
+    "generation_seconds_per_image": {"first": 1.98, "this": 1.87},
+    "model_init_seconds": {"first": 438.3, "this": 436.4},
+    "wall_clock_seconds_per_image": {"first": 62.2, "this": 4.95},
+    "conclusion": "20x the images for 1.59x the wall clock. The ~18-22 min input download and ~7.3 min model init are fixed costs independent of num_sdg; per-image GPU generation cost is flat (~1.9 s). Confirms TIMINGS.md's scaling prediction: batch big num_sdg to amortize the fixed ~25 min overhead."
+  },
+  "sources": [
+    "osmo workflow query texture_defect_gen_day1_manual_roi-3 (task start/end timestamps)",
+    "data/texture_defect_gen_day1_manual_roi-c2f5afb4/inference/timing_summary.json (in-pod SDG phase timings)",
+    "osmo workflow logs (generation end 04:50:57, DAFT conversion 04:55:48, upload window 04:55:50-04:56:01)",
+    "submit-shell timestamp 04:06:24Z"
+  ]
+}
