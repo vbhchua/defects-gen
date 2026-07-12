@@ -1,0 +1,113 @@
+{
+  "run": {
+    "name": "texture_defect_gen_day1_manual_roi-6771352a",
+    "workflow_id": "texture_defect_gen_day1_manual_roi-5",
+    "flow": "Day 1 — Infer + Label (manual ROI)",
+    "usecase": "glass",
+    "date": "2026-07-12",
+    "status": "COMPLETED",
+    "exit_code": 0,
+    "parameters": {
+      "num_sdg": 900,
+      "use_pretrained_checkpoint": true,
+      "checkpoint_step": 9000,
+      "model_size": "2b",
+      "infer_memory": "48Gi",
+      "anomaly_types": [
+        ["Phone", "oil"],
+        ["Phone", "scratch"],
+        ["Phone", "stain"]
+      ]
+    },
+    "inputs": {
+      "clean_images": 20,
+      "masks_per_defect": 5,
+      "unique_background_mask_combos_per_class": 100,
+      "source": "Roboflow vu-thi-thu-huyen/mobile-screen (COCO, splits merged to single train/) + nvidia/Cosmos-AnomalyGen-Glass-Masks (HF)"
+    },
+    "environment": {
+      "gpu": "1x NVIDIA RTX PRO 6000 (Blackwell)",
+      "pool": "default",
+      "s3_backend": "MinIO (minio.osmo:9000)",
+      "node_memory": "62Gi"
+    }
+  },
+  "wall_clock": {
+    "submitted_at": "2026-07-12T05:40:51Z",
+    "task_started_at": "2026-07-12T05:43:31Z",
+    "task_ended_at": "2026-07-12T06:58:41Z",
+    "queue_seconds": 160,
+    "queue_note": "GPU was still held by the canceling num_sdg=600 run (texture_defect_gen_day1_manual_roi-4, superseded by user request before it left its download phase).",
+    "wall_clock_seconds": 4510,
+    "wall_clock_human": "75m 10s"
+  },
+  "phases": {
+    "input_download_and_prep": {
+      "seconds": 1927,
+      "human": "~32.1 min",
+      "note": "Task start (05:43:31) to run_sdg launch (~06:15:38, derived from generation end minus measured in-pod phases). Pulls the 80.6 GB pretrained tree + checkpoint + dataset from MinIO, stages checkpoints, runs AMP prep_testcase for 900 entries. ~9 min longer than the metal run's equivalent phase.",
+      "derived": true
+    },
+    "sdg_setup": {
+      "seconds": 86.2,
+      "source": "timing_summary.json setup_seconds"
+    },
+    "model_init": {
+      "seconds": 750.2,
+      "human": "12.5 min",
+      "note": "Substantially slower than metal's 436 s on the same GPU.",
+      "source": "timing_summary.json model_init_seconds"
+    },
+    "generation": {
+      "seconds": 1718.3,
+      "human": "28.6 min",
+      "ended_at": "2026-07-12T06:58:13Z",
+      "seconds_per_image": 1.909,
+      "images": 900,
+      "source": "timing_summary.json generation_seconds"
+    },
+    "verify_and_daft_labeling": {
+      "seconds": 5,
+      "window": "06:58:13 -> 06:58:18",
+      "note": "convert_to_daft_format.py: 900 samples (Phone+oil/scratch/stain 300 each)."
+    },
+    "output_upload": {
+      "seconds": 15,
+      "bytes_uploaded": 736000000,
+      "rate": "~49 MB/s avg (peak 79.6 MB/s)",
+      "window": "06:58:18 -> 06:58:33"
+    }
+  },
+  "output": {
+    "url": "s3://osmo/dig/runs/texture_defect_gen_day1_manual_roi-6771352a/anomaly",
+    "local_copy": "data/texture_defect_gen_day1_manual_roi-6771352a/",
+    "generated_images": 900,
+    "images_per_defect_type": 300,
+    "total_files": 8226,
+    "total_size": "756M",
+    "upload_size": "736M"
+  },
+  "throughput": {
+    "effective_images_per_minute_wall_clock": 12.0,
+    "marginal_seconds_per_image_gpu": 1.91,
+    "wall_clock_seconds_per_image": 5.01
+  },
+  "comparison_with_metal_runs": {
+    "runs": {
+      "metal_30": "texture_defect_gen_day1_manual_roi-51f57bdd (2026-07-02)",
+      "metal_600": "texture_defect_gen_day1_manual_roi-c2f5afb4 (2026-07-12)",
+      "glass_900": "this run"
+    },
+    "wall_clock_seconds": {"metal_30": 1865, "metal_600": 2969, "glass_900": 4510},
+    "generation_seconds_per_image": {"metal_30": 1.98, "metal_600": 1.87, "glass_900": 1.91},
+    "model_init_seconds": {"metal_30": 438, "metal_600": 436, "glass_900": 750},
+    "input_download_and_prep_seconds": {"metal_600": 1374, "glass_900": 1927},
+    "conclusion": "Marginal per-image GPU cost is stable at ~1.9 s across use cases. Glass paid ~14 min more fixed overhead than metal (slower model init: 12.5 vs 7.3 min; longer download/prep: 32 vs 23 min), so the fixed-cost amortization argument holds but the fixed cost itself varies by use case and run."
+  },
+  "sources": [
+    "osmo workflow query texture_defect_gen_day1_manual_roi-5 (task start/end timestamps)",
+    "data/texture_defect_gen_day1_manual_roi-6771352a/inference/timing_summary.json (in-pod SDG phase timings)",
+    "osmo workflow logs (generation end 06:58:13, DAFT 06:58:13-18, upload 06:58:18-33)",
+    "submit-shell timestamp 05:40:51Z"
+  ]
+}

@@ -38,9 +38,9 @@
   },
   "phases": {
     "input_download_and_prep": {
-      "seconds": 1086,
-      "human": "~18.1 min",
-      "note": "Task start (04:06:39) to run_sdg launch (~04:24:45, derived). Dominated by pulling the 80.6 GB pretrained tree from MinIO; also includes checkpoint staging/validation and AMP prep_testcase for 600 entries.",
+      "seconds": 1374,
+      "human": "~22.9 min",
+      "note": "Task start (04:06:39) to run_sdg launch (~04:29:33, derived from 'Inference complete' 04:55:50 minus ~5 s verify/DAFT minus the measured in-pod phases). Dominated by pulling the 80.6 GB pretrained tree from MinIO; also includes checkpoint staging/validation and AMP prep_testcase for 600 entries.",
       "derived": true
     },
     "sdg_setup": {
@@ -55,15 +55,15 @@
     "generation": {
       "seconds": 1119.7,
       "human": "18.7 min",
-      "ended_at": "2026-07-12T04:50:57Z",
+      "ended_at": "~2026-07-12T04:55:45Z (derived)",
       "seconds_per_image": 1.866,
       "images": 600,
-      "source": "timing_summary.json generation_seconds"
+      "source": "timing_summary.json generation_seconds",
+      "note": "Retained logs were truncated mid-generation; an earlier revision of this file misread the first retained log line (04:50:57) as generation end and booked ~5 min of generation as labeling."
     },
     "verify_and_daft_labeling": {
-      "seconds": 291,
-      "human": "~4.9 min",
-      "note": "Last generated image (04:50:57) to 'Inference complete' (04:55:50): verify_output.sh + convert_to_daft_format.py over 600 samples.",
+      "seconds": 5,
+      "note": "verify_output.sh + convert_to_daft_format.py over 600 samples; measured at ~5 s on the (untruncated) glass-900 run and consistent with the 04:55:48 DAFT log line here.",
       "derived": true
     },
     "output_upload": {
