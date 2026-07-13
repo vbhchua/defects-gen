@@ -487,10 +487,27 @@
         <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
-      <!-- 10 · FINETUNE: RESULTS -->
+      <!-- 10 · NEXT STEPS -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">Detection results</div>
+          <div class="eyebrow">Where it goes</div>
+          <h2>Next steps</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="steps-list">
+          <div class="nstep r"><div class="num">1</div><div><div class="nt">Scale the metal dataset</div><div class="nd">Re-submit with larger <code>num_sdg</code> — the fixed input pull amortizes, so big batches are cheap per image.</div></div></div>
+          <div class="nstep r"><div class="num">2</div><div><div class="nt">Close the sim-to-real gap</div><div class="nd">Real-data validation is done (0.39 / 0.56 real mAP@50). Next: mix a small set of real images into training, generate from <b>new base backgrounds</b>, and fix thin-defect geometry (cracks, elongated scratches).</div></div></div>
+          <div class="nstep r"><div class="num">3</div><div><div class="nt">Finetune from scratch</div><div class="nd">Train a custom checkpoint on our own defect data (<code>use_pretrained_checkpoint=false</code>) — the single GPU holds the job for its duration.</div></div></div>
+          <div class="nstep opt r"><div class="num">4</div><div><div class="nt">PCBA Day 0 — full synthetic pipeline</div><div class="nd">USD render → image-edit → AnomalyGen. Needs an image-edit endpoint decision first: the pool has 1 GPU, so a local NIM can't run beside a DIG job.</div></div></div>
+          <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
+        </div>
+        <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
+      </section>
+
+      <!-- 11 · FINETUNE: RESULTS -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Backup · Detection results</div>
           <h2>Held-out test performance — never-seen backgrounds</h2>
           <div class="rule"></div>
         </div>
@@ -506,23 +523,6 @@
             <p>Blowhole/Fray/Uneven at 0.92–0.93 AP@50, but <b>MT_Break 0.67</b> — low-contrast smudges: 8/26 missed, most false positives. It also had only 2 valid-split samples; more Break data is the fix.</p></div>
         </div>
         <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
-      </section>
-
-      <!-- 11 · NEXT STEPS -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Where it goes</div>
-          <h2>Next steps</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="steps-list">
-          <div class="nstep r"><div class="num">1</div><div><div class="nt">Scale the metal dataset</div><div class="nd">Re-submit with larger <code>num_sdg</code> — the fixed input pull amortizes, so big batches are cheap per image.</div></div></div>
-          <div class="nstep r"><div class="num">2</div><div><div class="nt">Close the sim-to-real gap</div><div class="nd">Real-data validation is done (0.39 / 0.56 real mAP@50). Next: mix a small set of real images into training, generate from <b>new base backgrounds</b>, and fix thin-defect geometry (cracks, elongated scratches).</div></div></div>
-          <div class="nstep r"><div class="num">3</div><div><div class="nt">Finetune from scratch</div><div class="nd">Train a custom checkpoint on our own defect data (<code>use_pretrained_checkpoint=false</code>) — the single GPU holds the job for its duration.</div></div></div>
-          <div class="nstep opt r"><div class="num">4</div><div><div class="nt">PCBA Day 0 — full synthetic pipeline</div><div class="nd">USD render → image-edit → AnomalyGen. Needs an image-edit endpoint decision first: the pool has 1 GPU, so a local NIM can't run beside a DIG job.</div></div></div>
-          <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
-        </div>
-        <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
       </section>
 
       <!-- 12 · FINETUNE: APPROACH -->
