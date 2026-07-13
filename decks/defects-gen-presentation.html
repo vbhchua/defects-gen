@@ -68,6 +68,16 @@
   .summary-line{margin-top:18px;font-size:15px;color:var(--muted);grid-column:1/-1;
     display:flex;align-items:center;gap:9px}
 
+  /* motivation & takeaways */
+  .mtv{display:grid;grid-template-columns:1fr 1.15fr;gap:26px;flex:1;align-content:center}
+  .mtv .box{border:1px solid var(--line);border-radius:16px;padding:26px 28px;background:var(--panel)}
+  .mtv .box.take{background:#f7fcec;border-color:var(--green)}
+  .mtv h3{font-size:18px;font-weight:800;margin-bottom:15px;letter-spacing:-.3px}
+  .mtv ul{list-style:none;display:flex;flex-direction:column;gap:13px}
+  .mtv li{font-size:15.5px;line-height:1.5;color:var(--ink2);padding-left:27px;position:relative}
+  .mtv li::before{content:"?";position:absolute;left:0;top:0;color:var(--green-d);font-weight:800}
+  .mtv .take li::before{content:"✓"}
+
   /* feature grid */
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;flex:1;align-content:center}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 24px;
@@ -239,7 +249,32 @@
         </div>
       </section>
 
-      <!-- 2 · ONE RUN, END TO END (interactive) -->
+      <!-- 2 · MOTIVATION & TAKEAWAYS -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Why this build</div>
+          <h2>Motivation and takeaways</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="mtv">
+          <div class="box r">
+            <h3>The question</h3>
+            <ul>
+              <li>How easy is it for a <b>solo data scientist</b> to get this up and running end-to-end — with <b>agents as your AI-platform partner</b>?</li>
+            </ul>
+          </div>
+          <div class="box take r">
+            <h3>Takeaways</h3>
+            <ul>
+              <li><b>Pretty good</b> — it ran end-to-end without first learning OSMO, Kubernetes, or kind cluster setup; the agent carried the platform work.</li>
+              <li><b>The sim-to-real gap is still an open problem</b> — and how wide it is depends on the domain.</li>
+              <li><b>Scoped down, it's already useful</b> — glass defects, where only the defect is synthetic and the background is a real photo, transferred best.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · ONE RUN, END TO END (interactive) -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">How it works</div>
@@ -274,7 +309,7 @@
         </div>
       </section>
 
-      <!-- 3 · RESULTS -->
+      <!-- 4 · RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The output</div>
@@ -296,7 +331,7 @@
         <div class="footnote r">6 samples per class × 5 classes = 30 images, each with mask + crop + overlay + CSV row + DAFT-v3 labels.</div>
       </section>
 
-      <!-- 4 · FINETUNE: APPROACH -->
+      <!-- 5 · FINETUNE: APPROACH -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Closing the loop</div>
@@ -326,7 +361,7 @@
         <div class="footnote r">defects-gen/finetune-rf-detr: build_dataset.py · train.py · evaluate.py (--usecase metal|glass) · full write-ups in REPORT.md / REPORT_GLASS.md</div>
       </section>
 
-      <!-- 5 · FINETUNE: RESULTS -->
+      <!-- 6 · FINETUNE: RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Detection results</div>
@@ -347,7 +382,7 @@
         <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
       </section>
 
-      <!-- 6 · SCALING STUDY -->
+      <!-- 7 · SCALING STUDY -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Data-scaling study</div>
@@ -365,7 +400,7 @@
         </div>
       </section>
 
-      <!-- 7 · SIM-TO-REAL -->
+      <!-- 8 · SIM-TO-REAL -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Sanity check on real data</div>
@@ -385,7 +420,7 @@
         <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
       </section>
 
-      <!-- 8 · WAR STORIES -->
+      <!-- 9 · WAR STORIES -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The findings</div>
@@ -405,7 +440,7 @@
         <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
-      <!-- 9 · NEXT STEPS -->
+      <!-- 10 · NEXT STEPS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Where it goes</div>
@@ -422,7 +457,7 @@
         <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
       </section>
 
-      <!-- 10 · WHAT'S IN THE BOX -->
+      <!-- 11 · WHAT'S IN THE BOX -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · What defects-gen delivers</div>
@@ -451,7 +486,7 @@
         </div>
       </section>
 
-      <!-- 11 · ARCHITECTURE -->
+      <!-- 12 · ARCHITECTURE -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · How it's built</div>
@@ -488,7 +523,7 @@
         <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes on the war-stories slide.</div>
       </section>
 
-      <!-- 12 · FINETUNE: QUALITATIVE -->
+      <!-- 13 · FINETUNE: QUALITATIVE -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · Prediction quality</div>
@@ -507,7 +542,7 @@
         </div>
       </section>
 
-      <!-- 13 · TIMINGS -->
+      <!-- 14 · TIMINGS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · Measured, not estimated</div>
