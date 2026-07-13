@@ -184,6 +184,17 @@
   .chip li{font-size:13px;line-height:1.4;color:var(--ink2);padding-left:14px;position:relative}
   .chip li::before{content:"•";position:absolute;left:0;color:var(--green-d)}
 
+  /* three insights */
+  .ins{display:flex;flex-direction:column;gap:13px;flex:1;justify-content:center}
+  .insrow{display:flex;gap:16px;background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    padding:14px 18px;align-items:flex-start}
+  .insrow .num{flex:none;width:30px;height:30px;border-radius:999px;background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;margin-top:2px}
+  .insrow .it{font-size:15.5px;font-weight:700;color:var(--ink)}
+  .insrow ul{list-style:none;margin-top:5px;display:flex;flex-direction:column;gap:4px}
+  .insrow li{font-size:13px;line-height:1.42;color:var(--ink2);padding-left:17px;position:relative}
+  .insrow li::before{content:"→";position:absolute;left:0;color:var(--green-d)}
+
   /* next steps */
   .steps-list{display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center}
   .nstep{display:flex;gap:18px;align-items:flex-start;background:var(--panel);border:1px solid var(--line);
@@ -455,10 +466,60 @@
         <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
       </section>
 
-      <!-- 9 · WAR STORIES -->
+      <!-- 9 · INSIGHTS -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">The hard parts</div>
+          <div class="eyebrow">Learnings</div>
+          <h2>Three insights</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="ins">
+          <div class="insrow r"><div class="num">1</div><div>
+            <div class="it">SDG is hard to justify on its own</div>
+            <ul>
+              <li>It needs clear evidence of downstream impact — DepthAnything and Apple's Depth Pro are the reference points.</li>
+              <li>Sim-to-real metrics are commonly questioned; the expensive but definitive measure is training the downstream detector — done here.</li>
+            </ul>
+          </div></div>
+          <div class="insrow r"><div class="num">2</div><div>
+            <div class="it">The initial setup was more involved than expected</div>
+            <ul>
+              <li>The skill could reference companion skills that stand up OSMO and kind — and default to MinIO.</li>
+              <li>Heavy tooling leaves more room for error, unless the skills are well-tested and repeatable.</li>
+            </ul>
+          </div></div>
+          <div class="insrow r"><div class="num">3</div><div>
+            <div class="it">State the GPU specs upfront — the way PC games do</div>
+            <ul>
+              <li>It took several rounds of Q&amp;A with the skill to learn the Day 0 flow needs 2× GPUs; the minimum spec is not obvious.</li>
+              <li>AWS GPU quotas need business-case justification — extra lead time.</li>
+              <li>Codify minimum and recommended GPU / VRAM requirements in the skill itself.</li>
+            </ul>
+          </div></div>
+        </div>
+      </section>
+
+      <!-- 10 · NEXT STEPS -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Where it goes</div>
+          <h2>Next steps</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="steps-list">
+          <div class="nstep r"><div class="num">1</div><div><div class="nt">Scale the metal dataset</div><div class="nd">Re-submit with larger <code>num_sdg</code> — the fixed input pull amortizes, so big batches are cheap per image.</div></div></div>
+          <div class="nstep r"><div class="num">2</div><div><div class="nt">Close the sim-to-real gap</div><div class="nd">Real-data validation is done (0.39 / 0.56 real mAP@50). Next: mix a small set of real images into training, generate from <b>new base backgrounds</b>, and fix thin-defect geometry (cracks, elongated scratches).</div></div></div>
+          <div class="nstep r"><div class="num">3</div><div><div class="nt">Finetune from scratch</div><div class="nd">Train a custom checkpoint on our own defect data (<code>use_pretrained_checkpoint=false</code>) — the single GPU holds the job for its duration.</div></div></div>
+          <div class="nstep opt r"><div class="num">4</div><div><div class="nt">PCBA Day 0 — full synthetic pipeline</div><div class="nd">USD render → image-edit → AnomalyGen. Needs an image-edit endpoint decision first: the pool has 1 GPU, so a local NIM can't run beside a DIG job.</div></div></div>
+          <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
+        </div>
+        <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
+      </section>
+
+      <!-- 11 · WAR STORIES -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Backup · The hard parts</div>
           <h2>What made it hard — four failures, four root causes</h2>
           <div class="rule"></div>
         </div>
@@ -487,24 +548,7 @@
         <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
-      <!-- 10 · NEXT STEPS -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Where it goes</div>
-          <h2>Next steps</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="steps-list">
-          <div class="nstep r"><div class="num">1</div><div><div class="nt">Scale the metal dataset</div><div class="nd">Re-submit with larger <code>num_sdg</code> — the fixed input pull amortizes, so big batches are cheap per image.</div></div></div>
-          <div class="nstep r"><div class="num">2</div><div><div class="nt">Close the sim-to-real gap</div><div class="nd">Real-data validation is done (0.39 / 0.56 real mAP@50). Next: mix a small set of real images into training, generate from <b>new base backgrounds</b>, and fix thin-defect geometry (cracks, elongated scratches).</div></div></div>
-          <div class="nstep r"><div class="num">3</div><div><div class="nt">Finetune from scratch</div><div class="nd">Train a custom checkpoint on our own defect data (<code>use_pretrained_checkpoint=false</code>) — the single GPU holds the job for its duration.</div></div></div>
-          <div class="nstep opt r"><div class="num">4</div><div><div class="nt">PCBA Day 0 — full synthetic pipeline</div><div class="nd">USD render → image-edit → AnomalyGen. Needs an image-edit endpoint decision first: the pool has 1 GPU, so a local NIM can't run beside a DIG job.</div></div></div>
-          <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
-        </div>
-        <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
-      </section>
-
-      <!-- 11 · FINETUNE: RESULTS -->
+      <!-- 12 · FINETUNE: RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · Detection results</div>
@@ -525,7 +569,7 @@
         <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
       </section>
 
-      <!-- 12 · FINETUNE: APPROACH -->
+      <!-- 13 · FINETUNE: APPROACH -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · Closing the loop</div>
@@ -555,7 +599,7 @@
         <div class="footnote r">defects-gen/finetune-rf-detr: build_dataset.py · train.py · evaluate.py (--usecase metal|glass) · full write-ups in REPORT.md / REPORT_GLASS.md</div>
       </section>
 
-      <!-- 13 · RESULTS -->
+      <!-- 14 · RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · The output</div>
@@ -577,7 +621,7 @@
         <div class="footnote r">6 samples per class × 5 classes = 30 images, each with mask + crop + overlay + CSV row + DAFT-v3 labels.</div>
       </section>
 
-      <!-- 14 · FINETUNE: QUALITATIVE -->
+      <!-- 15 · FINETUNE: QUALITATIVE -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · Prediction quality</div>
@@ -596,7 +640,7 @@
         </div>
       </section>
 
-      <!-- 15 · TIMINGS -->
+      <!-- 16 · TIMINGS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Backup · Measured, not estimated</div>
