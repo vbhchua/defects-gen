@@ -475,17 +475,19 @@
         </div>
         <div class="ins">
           <div class="insrow r"><div class="num">1</div><div>
-            <div class="it">SDG is hard to justify on its own</div>
+            <div class="it">Synthetic data is judged by what it trains</div>
             <ul>
               <li>It needs clear evidence of downstream impact — DepthAnything and Apple's Depth Pro are the reference points.</li>
               <li>Sim-to-real metrics are commonly questioned; the expensive but definitive measure is training the downstream detector — done here.</li>
+              <li><b>Recommend:</b> a companion end-to-end example embedded in the skill — e.g. automatically training a detector.</li>
             </ul>
           </div></div>
           <div class="insrow r"><div class="num">2</div><div>
-            <div class="it">The initial setup was more involved than expected</div>
+            <div class="it">The platform was harder than the pipeline</div>
             <ul>
-              <li>The skill could reference companion skills that stand up OSMO and kind — and default to MinIO.</li>
-              <li>Heavy tooling leaves more room for error, unless the skills are well-tested and repeatable.</li>
+              <li>The Day-1 run itself takes 31 minutes; most of the effort went into standing up OSMO, kind, and storage first.</li>
+              <li>Heavy tooling multiplies the ways a run can fail, unless the skills that assemble it are tested and repeatable.</li>
+              <li><b>Recommend:</b> companion skills that get recommended automatically when there are gaps in the setup phase — e.g. OSMO, kind, MinIO as the default.</li>
             </ul>
           </div></div>
           <div class="insrow r"><div class="num">3</div><div>
@@ -493,7 +495,7 @@
             <ul>
               <li>It took several rounds of Q&amp;A with the skill to learn the Day 0 flow needs 2× GPUs; the minimum spec is not obvious.</li>
               <li>AWS GPU quotas need business-case justification — extra lead time.</li>
-              <li>Codify minimum and recommended GPU / VRAM requirements in the skill itself.</li>
+              <li><b>Recommend:</b> codify minimum and recommended GPU / VRAM requirements in the skill itself.</li>
             </ul>
           </div></div>
         </div>
