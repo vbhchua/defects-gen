@@ -180,6 +180,9 @@
   .chip h3 .sig{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--bad);
     background:var(--badbg);padding:3px 9px;border-radius:999px;white-space:nowrap}
   .chip p{font-size:14px;line-height:1.45;color:var(--ink2)}
+  .chip ul{list-style:none;display:flex;flex-direction:column;gap:4px}
+  .chip li{font-size:13px;line-height:1.4;color:var(--ink2);padding-left:14px;position:relative}
+  .chip li::before{content:"•";position:absolute;left:0;color:var(--green-d)}
 
   /* next steps */
   .steps-list{display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center}
@@ -452,7 +455,39 @@
         <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
       </section>
 
-      <!-- 9 · FINETUNE: APPROACH -->
+      <!-- 9 · WAR STORIES -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">The hard parts</div>
+          <h2>What made it hard — four failures, four root causes</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="chips">
+          <div class="chip r"><h3><span class="k">›</span> The "out of memory" that wasn't <span class="sig">exit 2137</span></h3><ul>
+            <li><b>Felt like:</b> every setup run died "out of memory" after ~20 minutes — with memory to spare on the host.</li>
+            <li><b>Why:</b> pods got <b>no S3 address settings</b>, so the client fell back to a hostname that can't resolve — and retried silently against a 24-hour window, leaking 13 MB/s until the pod was killed.</li>
+            <li><b>Fix:</b> inject the S3 endpoint + path-style env via <b>POD_TEMPLATE</b>. A memory symptom, an addressing bug.</li>
+          </ul></div>
+          <div class="chip r"><h3><span class="k">›</span> Everything broke overnight <span class="sig">exit 2014</span></h3><ul>
+            <li><b>Felt like:</b> after a host reboot, every workflow failed within seconds — including yesterday's working ones.</li>
+            <li><b>Why:</b> the default store kept its data on <b>/tmp</b>, wiped by the reboot — and the bucket only ever existed via an install-time hook.</li>
+            <li><b>Fix:</b> durable, host-mounted storage (MinIO on the 1 TB volume).</li>
+          </ul></div>
+          <div class="chip r"><h3><span class="k">›</span> The token that passed every check <span class="sig">KeyError</span></h3><ul>
+            <li><b>Felt like:</b> the HF token read gated repos fine from the laptop, then crashed inside the pod.</li>
+            <li><b>Why:</b> an <b>OAuth</b> token isn't a <b>user access</b> token — the in-pod login needs the real thing; and OSMO snapshots credentials <b>at submit time</b>.</li>
+            <li><b>Fix:</b> mint a user access token, and fix credentials <i>before</i> submitting.</li>
+          </ul></div>
+          <div class="chip r"><h3><span class="k">›</span> The upload that went backwards <span class="sig">NoSuchUpload</span></h3><ul>
+            <li><b>Felt like:</b> an 80 GB upload crawling to 40%, then regressing — indefinitely.</li>
+            <li><b>Why:</b> the default store locks itself every 10 s to persist; stalled clients retry and race its own part-cleanup.</li>
+            <li><b>Fix:</b> replace with <b>MinIO</b> — the same upload completed at 63.6 MB/s with zero errors.</li>
+          </ul></div>
+        </div>
+        <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
+      </section>
+
+      <!-- 10 · FINETUNE: APPROACH -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Closing the loop</div>
@@ -482,7 +517,7 @@
         <div class="footnote r">defects-gen/finetune-rf-detr: build_dataset.py · train.py · evaluate.py (--usecase metal|glass) · full write-ups in REPORT.md / REPORT_GLASS.md</div>
       </section>
 
-      <!-- 10 · FINETUNE: RESULTS -->
+      <!-- 11 · FINETUNE: RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Detection results</div>
@@ -503,7 +538,7 @@
         <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
       </section>
 
-      <!-- 11 · NEXT STEPS -->
+      <!-- 12 · NEXT STEPS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Where it goes</div>
@@ -518,26 +553,6 @@
           <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
         </div>
         <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
-      </section>
-
-      <!-- 12 · WAR STORIES -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Backup · The findings</div>
-          <h2>Four failures, four root causes</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="chips">
-          <div class="chip r"><h3><span class="k">›</span> OOM from missing S3 env <span class="sig">exit 2137</span></h3>
-            <p>Task pods get <b>no S3 env</b> from the chart → boto3 falls back to virtual-hosted DNS → unresolvable → ctrl leaks <b>13 MB/s</b> against a 24 h retry window until cgroup OOM. Fix: endpoint + path-style env in <b>POD_TEMPLATE</b>, both containers.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> Bucket lost on reboot <span class="sig">exit 2014</span></h3>
-            <p>The chart's localstack data dir was bind-mounted to host <b>/tmp</b> — wiped every reboot, and the bucket only exists via an install-time hook. Every workflow failed within 3 s; the logs API also returned <code>NoSuchBucket</code>.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> OAuth token fails in-pod <span class="sig">KeyError</span></h3>
-            <p>An HF <b>OAuth token</b> reads gated repos (probes pass) but fails in-pod <code>hf auth login</code> — no <code>accessToken</code> in whoami. Related: OSMO <b>snapshots credentials at submit time</b> — fix credentials <i>before</i> submitting.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> Multipart upload failures <span class="sig">NoSuchUpload</span></h3>
-            <p>localstack-persist write-locks the server every 10 s; under an 80 GB upload, stalled clients retry <code>CompleteMultipartUpload</code> and race its part-cleanup. Upload progress regressed 40%→34% indefinitely. Fix: <b>replace with MinIO</b> — no errors.</p></div>
-        </div>
-        <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
       <!-- 13 · RESULTS -->
