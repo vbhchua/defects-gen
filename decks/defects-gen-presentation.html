@@ -414,7 +414,45 @@
         </div>
       </section>
 
-      <!-- 7 · RESULTS -->
+      <!-- 7 · SCALING STUDY -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Data-scaling study</div>
+          <h2>Impact and Insights: Scaling synthetic data</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="tgrid r">
+          <div class="tstat"><div class="n">0.72→0.80</div><div class="l"><b>Synthetic test</b> mAP@50:95 rises with each step in training data</div></div>
+          <div class="tstat"><div class="n" style="color:var(--bad)">0.40→0.35</div><div class="l"><b>Real photos</b> mAP@50:95 — the trend reverses: the 120/class model transfers best</div></div>
+          <div class="tstat"><div class="n">20</div><div class="l"><b>shared base backgrounds</b> across all datasets limit diversity, regardless of image count</div></div>
+        </div>
+        <div class="shot r" style="text-align:left">
+          <img src="../docs/images/rfdetr_scaling_curves.png" alt="synthetic vs real scaling curves" style="display:block;max-width:100%;height:auto;max-height:285px;margin:0 auto;border-radius:8px">
+          <div class="cap">Three RF-DETR Large models · nested datasets from one num_sdg=1800 DIG run · identical training recipe<small>past ~120 images/class from the same 20 backgrounds, synthetic metrics improve while real-world transfer declines</small></div>
+        </div>
+      </section>
+
+      <!-- 8 · SIM-TO-REAL -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Sanity check on real data</div>
+          <h2>Impact and Insights: Sim-to-real transfer</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="vs r">
+          <div class="vsbox bad"><h3>Metal — 0.39 real mAP@50 (vs 0.93 synthetic)</h3>
+            <p>386 real Magnetic Tile photos. Recall holds (AR ~0.6) but precision and box quality drop. <b>Crack transfers worst (0.07–0.10 AP@50)</b> — real hairline cracks differ from the synthetic renders. Both background and defect are synthetic here.</p></div>
+          <div class="vsbox good"><h3>Glass — 0.56 real mAP@50 (vs 0.97 synthetic)</h3>
+            <p>300 real mobile-screen photos. <b>Oil transfers well: 0.949 AP@50 real.</b> Scratch and stain are detected but boxed loosely — real elongated scratches differ from the synthetic point-defect shapes.</p></div>
+        </div>
+        <div class="shot r" style="text-align:left;margin-top:16px">
+          <img src="../docs/images/rfdetr_glass_real_pairs.png" alt="glass model predictions on real phone photos" style="display:block;max-width:100%;height:auto;max-height:220px;margin:0 auto;border-radius:8px">
+          <div class="cap">Glass model on real photos — GT vs prediction<small>stain found (0.79) · scratches found but boxed loosely · one real oil smudge misread as stain</small></div>
+        </div>
+        <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
+      </section>
+
+      <!-- 9 · RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The output</div>
@@ -436,7 +474,7 @@
         <div class="footnote r">6 samples per class × 5 classes = 30 images, each with mask + crop + overlay + CSV row + DAFT-v3 labels.</div>
       </section>
 
-      <!-- 8 · FINETUNE: APPROACH -->
+      <!-- 10 · FINETUNE: APPROACH -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Closing the loop</div>
@@ -466,7 +504,7 @@
         <div class="footnote r">defects-gen/finetune-rf-detr: build_dataset.py · train.py · evaluate.py (--usecase metal|glass) · full write-ups in REPORT.md / REPORT_GLASS.md</div>
       </section>
 
-      <!-- 9 · FINETUNE: RESULTS -->
+      <!-- 11 · FINETUNE: RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Detection results</div>
@@ -485,44 +523,6 @@
             <p>Blowhole/Fray/Uneven at 0.92–0.93 AP@50, but <b>MT_Break 0.67</b> — low-contrast smudges: 8/26 missed, most false positives. It also had only 2 valid-split samples; more Break data is the fix.</p></div>
         </div>
         <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
-      </section>
-
-      <!-- 10 · SCALING STUDY -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Data-scaling study</div>
-          <h2>Scaling synthetic data: 120 / 240 / 360 per class</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="tgrid r">
-          <div class="tstat"><div class="n">0.72→0.80</div><div class="l"><b>Synthetic test</b> mAP@50:95 rises with each step in training data</div></div>
-          <div class="tstat"><div class="n" style="color:var(--bad)">0.40→0.35</div><div class="l"><b>Real photos</b> mAP@50:95 — the trend reverses: the 120/class model transfers best</div></div>
-          <div class="tstat"><div class="n">20</div><div class="l"><b>shared base backgrounds</b> across all datasets limit diversity, regardless of image count</div></div>
-        </div>
-        <div class="shot r" style="text-align:left">
-          <img src="../docs/images/rfdetr_scaling_curves.png" alt="synthetic vs real scaling curves" style="display:block;max-width:100%;height:auto;max-height:285px;margin:0 auto;border-radius:8px">
-          <div class="cap">Three RF-DETR Large models · nested datasets from one num_sdg=1800 DIG run · identical training recipe<small>past ~120 images/class from the same 20 backgrounds, synthetic metrics improve while real-world transfer declines</small></div>
-        </div>
-      </section>
-
-      <!-- 11 · SIM-TO-REAL -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Sanity check on real data</div>
-          <h2>Sim-to-real transfer: results on real photos</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="vs r">
-          <div class="vsbox bad"><h3>Metal — 0.39 real mAP@50 (vs 0.93 synthetic)</h3>
-            <p>386 real Magnetic Tile photos. Recall holds (AR ~0.6) but precision and box quality drop. <b>Crack transfers worst (0.07–0.10 AP@50)</b> — real hairline cracks differ from the synthetic renders. Both background and defect are synthetic here.</p></div>
-          <div class="vsbox good"><h3>Glass — 0.56 real mAP@50 (vs 0.97 synthetic)</h3>
-            <p>300 real mobile-screen photos. <b>Oil transfers well: 0.949 AP@50 real.</b> Scratch and stain are detected but boxed loosely — real elongated scratches differ from the synthetic point-defect shapes.</p></div>
-        </div>
-        <div class="shot r" style="text-align:left;margin-top:16px">
-          <img src="../docs/images/rfdetr_glass_real_pairs.png" alt="glass model predictions on real phone photos" style="display:block;max-width:100%;height:auto;max-height:220px;margin:0 auto;border-radius:8px">
-          <div class="cap">Glass model on real photos — GT vs prediction<small>stain found (0.79) · scratches found but boxed loosely · one real oil smudge misread as stain</small></div>
-        </div>
-        <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
       </section>
 
       <!-- 12 · WAR STORIES -->
