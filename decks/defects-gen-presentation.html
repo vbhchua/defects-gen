@@ -239,73 +239,7 @@
         </div>
       </section>
 
-      <!-- 2 · WHAT'S IN THE BOX -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">What defects-gen delivers</div>
-          <h2>One repo, the whole stack</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="grid3">
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏗️</div>
-            <h3>OSMO on kind</h3>
-            <p>6-node cluster: GPU passthrough, <code>node_group</code> scheduling, no-auth dev gateway. Two Helm charts, values in-repo.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🪣</div>
-            <h3>MinIO S3 backend</h3>
-            <p>Disk-native on the host's <b>1 TB volume</b>. Survives reboots; sustains 80 GB multipart uploads at <b>60–300 MB/s</b>.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🎨</div>
-            <h3>Cosmos AnomalyGen</h3>
-            <p>Metal-surface Day 1 (manual ROI) via NVIDIA's <b>DIG skill</b> — 5 defect classes, pretrained passthrough.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏷️</div>
-            <h3>Labels included</h3>
-            <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
-          <div class="card r"><span class="pill ok">SHIPPED</span><div class="ic">🔬</div>
-            <h3>Failure forensics</h3>
-            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM retry loops, bucket loss on reboot, token auth failures, multipart upload errors.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🧪</div>
-            <h3>Detectors trained on it</h3>
-            <p><b>RF-DETR Large</b> finetuned locally on the metal &amp; glass outputs — 0.85 / 0.97 mAP@50 on held-out backgrounds. PCBA next; cookbooks already in the skill.</p></div>
-        </div>
-      </section>
-
-      <!-- 3 · ARCHITECTURE -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">How it's built</div>
-          <h2>Architecture — one host, three planes</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="arch">
-          <div class="col r">
-            <div class="ctitle">Host · 62 GiB / 1 TB</div>
-            <div class="stackbox">
-              <div class="node">kind cluster <small>1 control-plane + 5 workers</small></div>
-              <div class="node">NVIDIA driver + container toolkit <small>GPU passthrough to compute node</small></div>
-              <div class="node green">/var/lib/osmo-minio <small>durable S3 data — host-mounted (not /tmp!)</small></div>
-            </div>
-          </div>
-          <div class="col r">
-            <div class="ctitle">osmo namespace</div>
-            <div class="stackbox">
-              <div class="node">envoy gateway <small>no-auth dev identity · host :80</small></div>
-              <div class="node">osmo service + worker + logger <small>postgres · redis</small></div>
-              <div class="node green">MinIO :9000 <small>bucket <code>osmo</code> — data + logs + artifacts</small></div>
-              <div class="node">backend-operator <small>token login (not password/dev)</small></div>
-            </div>
-          </div>
-          <div class="col r">
-            <div class="ctitle">Workflow plane</div>
-            <div class="stackbox">
-              <div class="node gate"><b>POD_TEMPLATE</b><small>S3 env · nvoptix · 16 GiB /dev/shm — ConfigMap-managed</small></div>
-              <div class="node">task pods <small>osmo-ctrl + user container · namespace <code>default</code></small></div>
-              <div class="node green">AnomalyGen 2B on RTX PRO 6000 <small>21.6 GiB GPU mem · ~25 it/s</small></div>
-            </div>
-          </div>
-        </div>
-        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes on the next slides.</div>
-      </section>
-
-      <!-- 4 · ONE RUN, END TO END (interactive) -->
+      <!-- 2 · ONE RUN, END TO END (interactive) -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">How it works</div>
@@ -340,7 +274,7 @@
         </div>
       </section>
 
-      <!-- 5 · RESULTS -->
+      <!-- 3 · RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The output</div>
@@ -362,7 +296,7 @@
         <div class="footnote r">6 samples per class × 5 classes = 30 images, each with mask + crop + overlay + CSV row + DAFT-v3 labels.</div>
       </section>
 
-      <!-- 6 · FINETUNE: APPROACH -->
+      <!-- 4 · FINETUNE: APPROACH -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Closing the loop</div>
@@ -392,7 +326,7 @@
         <div class="footnote r">defects-gen/finetune-rf-detr: build_dataset.py · train.py · evaluate.py (--usecase metal|glass) · full write-ups in REPORT.md / REPORT_GLASS.md</div>
       </section>
 
-      <!-- 7 · FINETUNE: RESULTS -->
+      <!-- 5 · FINETUNE: RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Detection results</div>
@@ -413,26 +347,7 @@
         <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
       </section>
 
-      <!-- 8 · FINETUNE: QUALITATIVE -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Prediction quality</div>
-          <h2>Ground truth vs prediction — test set</h2>
-          <div class="rule"></div>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:12px;min-height:0">
-          <div class="shot r" style="text-align:left">
-            <img src="../docs/images/rfdetr_metal_pairs.png" alt="metal GT vs prediction pairs" style="display:block;max-width:100%;width:auto;height:auto;max-height:158px;margin:0 auto;border-radius:8px">
-            <div class="cap">Metal — MT_Blowhole · MT_Crack · MT_Uneven<small>each pair: ground truth (left) vs model prediction with confidence (right)</small></div>
-          </div>
-          <div class="shot r" style="text-align:left">
-            <img src="../docs/images/rfdetr_glass_pairs.png" alt="glass GT vs prediction pairs" style="display:block;max-width:100%;width:auto;height:auto;max-height:158px;margin:0 auto;border-radius:8px">
-            <div class="cap">Glass — oil 0.93 · scratch 0.88 · stain 0.83<small>tiny sub-10 px stains are found; thin faint scratches are the remaining challenge</small></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 9 · SCALING STUDY -->
+      <!-- 6 · SCALING STUDY -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Data-scaling study</div>
@@ -450,7 +365,7 @@
         </div>
       </section>
 
-      <!-- 10 · SIM-TO-REAL -->
+      <!-- 7 · SIM-TO-REAL -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Sanity check on real data</div>
@@ -470,7 +385,7 @@
         <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
       </section>
 
-      <!-- 11 · WAR STORIES -->
+      <!-- 8 · WAR STORIES -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The findings</div>
@@ -490,10 +405,112 @@
         <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
-      <!-- 12 · TIMINGS -->
+      <!-- 9 · NEXT STEPS -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">Measured, not estimated</div>
+          <div class="eyebrow">Where it goes</div>
+          <h2>Next steps</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="steps-list">
+          <div class="nstep r"><div class="num">1</div><div><div class="nt">Scale the metal dataset</div><div class="nd">Re-submit with larger <code>num_sdg</code> — the fixed input pull amortizes, so big batches are cheap per image.</div></div></div>
+          <div class="nstep r"><div class="num">2</div><div><div class="nt">Close the sim-to-real gap</div><div class="nd">Real-data validation is done (0.39 / 0.56 real mAP@50). Next: mix a small set of real images into training, generate from <b>new base backgrounds</b>, and fix thin-defect geometry (cracks, elongated scratches).</div></div></div>
+          <div class="nstep r"><div class="num">3</div><div><div class="nt">Finetune from scratch</div><div class="nd">Train a custom checkpoint on our own defect data (<code>use_pretrained_checkpoint=false</code>) — the single GPU holds the job for its duration.</div></div></div>
+          <div class="nstep opt r"><div class="num">4</div><div><div class="nt">PCBA Day 0 — full synthetic pipeline</div><div class="nd">USD render → image-edit → AnomalyGen. Needs an image-edit endpoint decision first: the pool has 1 GPU, so a local NIM can't run beside a DIG job.</div></div></div>
+          <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
+        </div>
+        <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
+      </section>
+
+      <!-- 10 · WHAT'S IN THE BOX -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Backup · What defects-gen delivers</div>
+          <h2>One repo, the whole stack</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="grid3">
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏗️</div>
+            <h3>OSMO on kind</h3>
+            <p>6-node cluster: GPU passthrough, <code>node_group</code> scheduling, no-auth dev gateway. Two Helm charts, values in-repo.</p></div>
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🪣</div>
+            <h3>MinIO S3 backend</h3>
+            <p>Disk-native on the host's <b>1 TB volume</b>. Survives reboots; sustains 80 GB multipart uploads at <b>60–300 MB/s</b>.</p></div>
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🎨</div>
+            <h3>Cosmos AnomalyGen</h3>
+            <p>Metal-surface Day 1 (manual ROI) via NVIDIA's <b>DIG skill</b> — 5 defect classes, pretrained passthrough.</p></div>
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏷️</div>
+            <h3>Labels included</h3>
+            <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
+          <div class="card r"><span class="pill ok">SHIPPED</span><div class="ic">🔬</div>
+            <h3>Failure forensics</h3>
+            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM retry loops, bucket loss on reboot, token auth failures, multipart upload errors.</p></div>
+          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🧪</div>
+            <h3>Detectors trained on it</h3>
+            <p><b>RF-DETR Large</b> finetuned locally on the metal &amp; glass outputs — 0.85 / 0.97 mAP@50 on held-out backgrounds. PCBA next; cookbooks already in the skill.</p></div>
+        </div>
+      </section>
+
+      <!-- 11 · ARCHITECTURE -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Backup · How it's built</div>
+          <h2>Architecture — one host, three planes</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="arch">
+          <div class="col r">
+            <div class="ctitle">Host · 62 GiB / 1 TB</div>
+            <div class="stackbox">
+              <div class="node">kind cluster <small>1 control-plane + 5 workers</small></div>
+              <div class="node">NVIDIA driver + container toolkit <small>GPU passthrough to compute node</small></div>
+              <div class="node green">/var/lib/osmo-minio <small>durable S3 data — host-mounted (not /tmp!)</small></div>
+            </div>
+          </div>
+          <div class="col r">
+            <div class="ctitle">osmo namespace</div>
+            <div class="stackbox">
+              <div class="node">envoy gateway <small>no-auth dev identity · host :80</small></div>
+              <div class="node">osmo service + worker + logger <small>postgres · redis</small></div>
+              <div class="node green">MinIO :9000 <small>bucket <code>osmo</code> — data + logs + artifacts</small></div>
+              <div class="node">backend-operator <small>token login (not password/dev)</small></div>
+            </div>
+          </div>
+          <div class="col r">
+            <div class="ctitle">Workflow plane</div>
+            <div class="stackbox">
+              <div class="node gate"><b>POD_TEMPLATE</b><small>S3 env · nvoptix · 16 GiB /dev/shm — ConfigMap-managed</small></div>
+              <div class="node">task pods <small>osmo-ctrl + user container · namespace <code>default</code></small></div>
+              <div class="node green">AnomalyGen 2B on RTX PRO 6000 <small>21.6 GiB GPU mem · ~25 it/s</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes on the war-stories slide.</div>
+      </section>
+
+      <!-- 12 · FINETUNE: QUALITATIVE -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Backup · Prediction quality</div>
+          <h2>Ground truth vs prediction — test set</h2>
+          <div class="rule"></div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:12px;min-height:0">
+          <div class="shot r" style="text-align:left">
+            <img src="../docs/images/rfdetr_metal_pairs.png" alt="metal GT vs prediction pairs" style="display:block;max-width:100%;width:auto;height:auto;max-height:158px;margin:0 auto;border-radius:8px">
+            <div class="cap">Metal — MT_Blowhole · MT_Crack · MT_Uneven<small>each pair: ground truth (left) vs model prediction with confidence (right)</small></div>
+          </div>
+          <div class="shot r" style="text-align:left">
+            <img src="../docs/images/rfdetr_glass_pairs.png" alt="glass GT vs prediction pairs" style="display:block;max-width:100%;width:auto;height:auto;max-height:158px;margin:0 auto;border-radius:8px">
+            <div class="cap">Glass — oil 0.93 · scratch 0.88 · stain 0.83<small>tiny sub-10 px stains are found; thin faint scratches are the remaining challenge</small></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 13 · TIMINGS -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Backup · Measured, not estimated</div>
           <h2>Timings on 1× RTX PRO 6000</h2>
           <div class="rule"></div>
         </div>
@@ -509,23 +526,6 @@
             <p>Identical upload: <b>completed in 22:40</b> at 63.6 MB/s average (peaks 305 MB/s), <b>zero</b> multipart errors, data durable on the host's 1 TB volume across reboots.</p></div>
         </div>
         <div class="amort r"><b>Scaling:</b> the 22-min input pull is a <b>fixed</b> cost — 30 images cost ~16 s/image end-to-end, but ~300 images ≈ <b>1.7 h</b>, not 10× the 31-min run. Larger batches amortize the fixed cost.</div>
-      </section>
-
-      <!-- 13 · NEXT STEPS -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Where it goes</div>
-          <h2>Next steps</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="steps-list">
-          <div class="nstep r"><div class="num">1</div><div><div class="nt">Scale the metal dataset</div><div class="nd">Re-submit with larger <code>num_sdg</code> — the fixed input pull amortizes, so big batches are cheap per image.</div></div></div>
-          <div class="nstep r"><div class="num">2</div><div><div class="nt">Close the sim-to-real gap</div><div class="nd">Real-data validation is done (0.39 / 0.56 real mAP@50). Next: mix a small set of real images into training, generate from <b>new base backgrounds</b>, and fix thin-defect geometry (cracks, elongated scratches).</div></div></div>
-          <div class="nstep r"><div class="num">3</div><div><div class="nt">Finetune from scratch</div><div class="nd">Train a custom checkpoint on our own defect data (<code>use_pretrained_checkpoint=false</code>) — the single GPU holds the job for its duration.</div></div></div>
-          <div class="nstep opt r"><div class="num">4</div><div><div class="nt">PCBA Day 0 — full synthetic pipeline</div><div class="nd">USD render → image-edit → AnomalyGen. Needs an image-edit endpoint decision first: the pool has 1 GPU, so a local NIM can't run beside a DIG job.</div></div></div>
-          <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
-        </div>
-        <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
       </section>
 
     </div><!-- /track -->
