@@ -68,6 +68,16 @@
   .summary-line{margin-top:18px;font-size:15px;color:var(--muted);grid-column:1/-1;
     display:flex;align-items:center;gap:9px}
 
+  /* motivation & takeaways */
+  .mtv{display:grid;grid-template-columns:1fr 1.15fr;gap:26px;flex:1;align-content:center}
+  .mtv .box{border:1px solid var(--line);border-radius:16px;padding:26px 28px;background:var(--panel)}
+  .mtv .box.take{background:#f7fcec;border-color:var(--green)}
+  .mtv h3{font-size:18px;font-weight:800;margin-bottom:15px;letter-spacing:-.3px}
+  .mtv ul{list-style:none;display:flex;flex-direction:column;gap:13px}
+  .mtv li{font-size:15.5px;line-height:1.5;color:var(--ink2);padding-left:27px;position:relative}
+  .mtv li::before{content:"?";position:absolute;left:0;top:0;color:var(--green-d);font-weight:800}
+  .mtv .take li::before{content:"✓"}
+
   /* feature grid */
   .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;flex:1;align-content:center}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:24px 24px;
@@ -79,6 +89,8 @@
     padding:4px 9px;border-radius:999px}
   .pill.ok{background:var(--green-soft);color:var(--green-d)}
   .pill.wip{background:var(--warnbg);color:var(--warn)}
+  .pill.nat{background:#eef3fb;color:#1f6feb}
+  .pill.mod{background:var(--warnbg);color:var(--warn)}
 
   /* architecture */
   .arch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;flex:1;align-items:stretch;margin-top:6px}
@@ -125,6 +137,15 @@
   .flowcap{font-size:15px;color:var(--ink2);min-height:22px}
   .flowcap b{color:var(--green-d)}
 
+  /* what it looks like */
+  .wys{display:grid;grid-template-columns:34px repeat(4,1fr);gap:10px 12px;flex:1;align-content:center;min-height:0}
+  .wys .ch{font-size:13.5px;font-weight:700;text-align:center;color:var(--ink);align-self:end;padding-bottom:2px}
+  .wys .rl{display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;
+    letter-spacing:1.5px;text-transform:uppercase;color:var(--green-d);
+    writing-mode:vertical-rl;transform:rotate(180deg)}
+  .wys .cell{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px;display:flex}
+  .wys .cell img{width:100%;height:168px;object-fit:contain}
+
   /* results showcase */
   .trip{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px}
   .shot{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
@@ -159,6 +180,20 @@
   .chip h3 .sig{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.4px;color:var(--bad);
     background:var(--badbg);padding:3px 9px;border-radius:999px;white-space:nowrap}
   .chip p{font-size:14px;line-height:1.45;color:var(--ink2)}
+  .chip ul{list-style:none;display:flex;flex-direction:column;gap:4px}
+  .chip li{font-size:13px;line-height:1.4;color:var(--ink2);padding-left:14px;position:relative}
+  .chip li::before{content:"•";position:absolute;left:0;color:var(--green-d)}
+
+  /* three insights */
+  .ins{display:flex;flex-direction:column;gap:13px;flex:1;justify-content:center}
+  .insrow{display:flex;gap:16px;background:var(--panel);border:1px solid var(--line);border-radius:13px;
+    padding:14px 18px;align-items:flex-start}
+  .insrow .num{flex:none;width:30px;height:30px;border-radius:999px;background:var(--green);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;margin-top:2px}
+  .insrow .it{font-size:15.5px;font-weight:700;color:var(--ink)}
+  .insrow ul{list-style:none;margin-top:5px;display:flex;flex-direction:column;gap:4px}
+  .insrow li{font-size:13px;line-height:1.42;color:var(--ink2);padding-left:17px;position:relative}
+  .insrow li::before{content:"→";position:absolute;left:0;color:var(--green-d)}
 
   /* next steps */
   .steps-list{display:flex;flex-direction:column;gap:14px;flex:1;justify-content:center}
@@ -221,9 +256,9 @@
       <section class="slide">
         <div class="hero">
           <div>
-            <span class="tag r">Testing NVIDIA Cosmos for defects generation</span>
+            <span class="tag r">NVIDIA Cosmos + OSMO · self-hosted end-to-end</span>
             <h1 class="r">defects-gen<span class="dot">.</span></h1>
-            <div class="sub r"><b>Synthetic defect images for AOI</b> — the full
+            <div class="sub r"><b>Synthetic defect images for AOI</b> (automated optical inspection) — the full
               <span class="accent">NVIDIA OSMO + Cosmos AnomalyGen</span> pipeline,
               reproduced on a single GPU host.</div>
             <div class="meta r">kind cluster · OSMO service 6.3.1 · Cosmos-AnomalyGen-Metal-2B ·
@@ -239,36 +274,89 @@
         </div>
       </section>
 
-      <!-- 2 · WHAT'S IN THE BOX -->
+      <!-- 2 · MOTIVATION & TAKEAWAYS -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">What defects-gen delivers</div>
-          <h2>One repo, the whole stack</h2>
+          <div class="eyebrow">Why this build</div>
+          <h2>Motivation and takeaways</h2>
           <div class="rule"></div>
         </div>
-        <div class="grid3">
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏗️</div>
-            <h3>OSMO on kind</h3>
-            <p>6-node cluster: GPU passthrough, <code>node_group</code> scheduling, no-auth dev gateway. Two Helm charts, values in-repo.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🪣</div>
-            <h3>MinIO S3 backend</h3>
-            <p>Disk-native on the host's <b>1 TB volume</b>. Survives reboots; sustains 80 GB multipart uploads at <b>60–300 MB/s</b>.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🎨</div>
-            <h3>Cosmos AnomalyGen</h3>
-            <p>Metal-surface Day 1 (manual ROI) via NVIDIA's <b>DIG skill</b> — 5 defect classes, pretrained passthrough.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏷️</div>
-            <h3>Labels included</h3>
-            <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
-          <div class="card r"><span class="pill ok">SHIPPED</span><div class="ic">🔬</div>
-            <h3>Failure forensics</h3>
-            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM retry loops, bucket loss on reboot, token auth failures, multipart upload errors.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🧪</div>
-            <h3>Detectors trained on it</h3>
-            <p><b>RF-DETR Large</b> finetuned locally on the metal &amp; glass outputs — 0.85 / 0.97 mAP@50 on held-out backgrounds. PCBA next; cookbooks already in the skill.</p></div>
+        <div class="mtv">
+          <div class="box r">
+            <h3>The question</h3>
+            <ul>
+              <li>How easy is it for a <b>solo data scientist</b> to get this up and running end-to-end — with <b>agents as your AI-platform partner</b>?</li>
+            </ul>
+          </div>
+          <div class="box take r">
+            <h3>Takeaways</h3>
+            <ul>
+              <li><b>Pretty good</b> — it ran end-to-end without first learning OSMO, Kubernetes, or kind cluster setup; the agent carried the platform work.</li>
+              <li><b>The sim-to-real gap is still an open problem</b> — and how wide it is depends on the domain.</li>
+              <li><b>Scoped down, it's already useful</b> — glass defects, where only the defect is synthetic and the background is a real photo, transferred best.</li>
+            </ul>
+          </div>
         </div>
       </section>
 
-      <!-- 3 · ARCHITECTURE -->
+      <!-- 3 · WHAT IT LOOKS LIKE -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">The data</div>
+          <h2>What it looks like — real vs synthetic</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="wys r">
+          <div></div>
+          <div class="ch">Metal — crack</div>
+          <div class="ch">Metal — blowhole</div>
+          <div class="ch">Glass — oil</div>
+          <div class="ch">Glass — scratch</div>
+          <div class="rl">Real</div>
+          <div class="cell"><img src="../docs/images/wys_crack_real.jpg" alt="real magnetic-tile crack"></div>
+          <div class="cell"><img src="../docs/images/wys_blowhole_real.jpg" alt="real magnetic-tile blowhole"></div>
+          <div class="cell"><img src="../docs/images/wys_oil_real.jpg" alt="real oil smudge on a phone screen"></div>
+          <div class="cell"><img src="../docs/images/wys_scratch_real.jpg" alt="real scratches on a phone screen"></div>
+          <div class="rl">Synthetic</div>
+          <div class="cell"><img src="../docs/images/wys_crack_synth.png" alt="generated crack on a metal tile"></div>
+          <div class="cell"><img src="../docs/images/wys_blowhole_synth.png" alt="generated blowhole on a metal tile"></div>
+          <div class="cell"><img src="../docs/images/wys_oil_synth.png" alt="generated oil smudge on a real phone photo"></div>
+          <div class="cell"><img src="../docs/images/wys_scratch_synth.png" alt="generated scratch on a real phone photo"></div>
+        </div>
+        <div class="footnote r">Real: the Magnetic Tile defect dataset · the Roboflow mobile-screen dataset. Synthetic: Cosmos AnomalyGen 2B output from the Day-1 runs in this repo.</div>
+      </section>
+
+      <!-- 4 · WHAT'S IN THE BOX -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Key features</div>
+          <h2>What defects-gen does</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="grid3">
+          <div class="card r"><span class="pill ok">ADDED</span><div class="ic">🏗️</div>
+            <h3>OSMO on kind</h3>
+            <p>6-node cluster: GPU passthrough, <code>node_group</code> scheduling, no-auth dev gateway. Two Helm charts, values in-repo.</p></div>
+          <div class="card r"><span class="pill mod">MODIFIED</span><div class="ic">🪣</div>
+            <h3>MinIO S3 backend</h3>
+            <p>Disk-native on the host's <b>1 TB volume</b>. Survives reboots; sustains 80 GB multipart uploads at <b>60–300 MB/s</b>.</p></div>
+          <div class="card r"><span class="pill nat">SKILL</span><div class="ic">🎨</div>
+            <h3>Cosmos AnomalyGen</h3>
+            <p>Metal-surface Day 1 (manual ROI) via NVIDIA's <b>DIG skill</b> — 5 defect classes, pretrained passthrough.</p></div>
+          <div class="card r"><span class="pill nat">SKILL</span><div class="ic">🏷️</div>
+            <h3>Labels included</h3>
+            <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
+          <div class="card r"><span class="pill ok">ADDED</span><div class="ic">🔬</div>
+            <h3>Failure forensics</h3>
+            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM retry loops, bucket loss on reboot, token auth failures, multipart upload errors.</p></div>
+          <div class="card r"><span class="pill ok">ADDED</span><div class="ic">🧪</div>
+            <h3>Detectors trained on it</h3>
+            <p><b>RF-DETR Large</b> finetuned locally on the metal &amp; glass outputs — 0.85 / 0.97 mAP@50 on held-out backgrounds. PCBA next; cookbooks already in the skill.</p></div>
+        </div>
+        <div class="footnote r"><b>SKILL</b> = the <i>physical-ai-defect-image-generation</i> skill, run as designed · <b>MODIFIED</b> = the default deployment changed here (chart's localstack → MinIO) · <b>ADDED</b> = built new in this repo (the local OSMO platform, the forensics, the detector training).</div>
+      </section>
+
+      <!-- 5 · ARCHITECTURE -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">How it's built</div>
@@ -302,10 +390,10 @@
             </div>
           </div>
         </div>
-        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes on the next slides.</div>
+        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes we hit (full forensics: PROGRESS.md).</div>
       </section>
 
-      <!-- 4 · ONE RUN, END TO END (interactive) -->
+      <!-- 6 · ONE RUN, END TO END (interactive) -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">How it works</div>
@@ -340,121 +428,29 @@
         </div>
       </section>
 
-      <!-- 5 · RESULTS -->
+      <!-- 7 · SCALING STUDY -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">The output</div>
-          <h2>Real samples from the verified run</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="trip r">
-          <div class="shot"><img src="../docs/images/MT_Crack_original.png" alt="clean input"><div class="cap">Clean input<small>pre-captured metal-surface ROI</small></div></div>
-          <div class="shot"><img src="../docs/images/MT_Crack_mask.png" alt="defect mask"><div class="cap">Defect mask<small>where the model must paint the defect</small></div></div>
-          <div class="shot"><img src="../docs/images/MT_Crack.png" alt="generated crack"><div class="cap">Generated defect<small>MT_Crack — AnomalyGen 2B output</small></div></div>
-        </div>
-        <div class="classrow r">
-          <div class="shot"><img src="../docs/images/MT_Blowhole.png" alt="MT_Blowhole"><div class="cap">MT_Blowhole</div></div>
-          <div class="shot"><img src="../docs/images/MT_Break.png" alt="MT_Break"><div class="cap">MT_Break</div></div>
-          <div class="shot"><img src="../docs/images/MT_Crack.png" alt="MT_Crack"><div class="cap">MT_Crack</div></div>
-          <div class="shot"><img src="../docs/images/MT_Fray.png" alt="MT_Fray"><div class="cap">MT_Fray</div></div>
-          <div class="shot"><img src="../docs/images/MT_Uneven.png" alt="MT_Uneven"><div class="cap">MT_Uneven</div></div>
-        </div>
-        <div class="footnote r">6 samples per class × 5 classes = 30 images, each with mask + crop + overlay + CSV row + DAFT-v3 labels.</div>
-      </section>
-
-      <!-- 6 · FINETUNE: APPROACH -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">New · Closing the loop</div>
-          <h2>Synthetic data → object detector, all local</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="grid3">
-          <div class="card r"><span class="pill ok">APACHE 2.0</span><div class="ic">🤖</div>
-            <h3>RF-DETR Large</h3>
-            <p>Roboflow's real-time DETR (ICLR 2026): DINOv2 backbone, 33.9 M params, 704×704. Largest <b>Apache-2.0-licensed</b> variant — XL/2XL are PML 1.0.</p></div>
-          <div class="card r"><span class="pill ok">FREE LABELS</span><div class="ic">🏷️</div>
-            <h3>Boxes from masks</h3>
-            <p>DIG emits pixel masks, not boxes. Connected components on <code>original_mask</code> → COCO bboxes; class from the filename. <b>No manual annotation needed.</b></p></div>
-          <div class="card r"><span class="pill ok">NO LEAKAGE</span><div class="ic">✂️</div>
-            <h3>Group splits</h3>
-            <p>All images derive from just <b>20 base backgrounds</b> (20–45 variants each). Splits are grouped <b>by base image</b> — test backgrounds are never seen in training.</p></div>
-          <div class="card r"><span class="pill ok">2 DATASETS</span><div class="ic">🗂️</div>
-            <h3>Metal &amp; glass</h3>
-            <p><b>Metal:</b> 629 imgs, 5 classes (Blowhole, Break, Crack, Fray, Uneven). <b>Glass:</b> 900 phone-screen imgs, 3 classes (oil, scratch, stain), perfectly balanced.</p></div>
-          <div class="card r"><span class="pill ok">~10 MIN</span><div class="ic">⚡</div>
-            <h3>Local finetune</h3>
-            <p>Batch 16 @ 704², EMA, early stopping. <b>~10 min per model</b> on the same RTX PRO 6000 (peak 26 GiB) — the GPU that generated the data also trains on it.</p></div>
-          <div class="card r"><span class="pill ok">HELD-OUT EVAL</span><div class="ic">📏</div>
-            <h3>COCOeval + confusion</h3>
-            <p>mAP@50 / @50:95 overall &amp; per class on the held-out split, confusion matrix, latency benchmark. Valid→test gap stays within a few points.</p></div>
-        </div>
-        <div class="footnote r">defects-gen/finetune-rf-detr: build_dataset.py · train.py · evaluate.py (--usecase metal|glass) · full write-ups in REPORT.md / REPORT_GLASS.md</div>
-      </section>
-
-      <!-- 7 · FINETUNE: RESULTS -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">New · Detection results</div>
-          <h2>Held-out test performance — never-seen backgrounds</h2>
+          <div class="eyebrow">Data-scaling study</div>
+          <h2>Impact and Insights: Scaling synthetic data</h2>
           <div class="rule"></div>
         </div>
         <div class="tgrid r">
-          <div class="tstat"><div class="n">0.85<small> mAP@50</small></div><div class="l"><b>Metal</b> — 5 classes · 0.69 mAP@50:95 · 11 ms/image</div></div>
-          <div class="tstat"><div class="n">0.97<small> mAP@50</small></div><div class="l"><b>Glass</b> — 3 classes · 0.78 mAP@50:95 · 18 ms/image</div></div>
-          <div class="tstat"><div class="n">2×10<small> min</small></div><div class="l"><b>Total training</b> — both models, local, early-stopped from COCO weights</div></div>
-        </div>
-        <div class="vs r">
-          <div class="vsbox good"><h3>✓ Glass — 0.97 mAP@50</h3>
-            <p><b>No cross-class confusion</b>: oil 1.00 AP@50 (45/45), scratch &amp; stain 0.95. All 9 errors are missed small defects or loose boxes on faint thin scratches — none are a wrong class.</p></div>
-          <div class="vsbox bad"><h3>✗ Metal — MT_Break lags</h3>
-            <p>Blowhole/Fray/Uneven at 0.92–0.93 AP@50, but <b>MT_Break 0.67</b> — low-contrast smudges: 8/26 missed, most false positives. It also had only 2 valid-split samples; more Break data is the fix.</p></div>
-        </div>
-        <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across backgrounds rather than memorizing them. Next: evaluation on real, non-synthetic defect images.</div>
-      </section>
-
-      <!-- 8 · FINETUNE: QUALITATIVE -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">New · Prediction quality</div>
-          <h2>Ground truth vs prediction — test set</h2>
-          <div class="rule"></div>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;justify-content:flex-start;gap:12px;min-height:0">
-          <div class="shot r" style="text-align:left">
-            <img src="../docs/images/rfdetr_metal_pairs.png" alt="metal GT vs prediction pairs" style="display:block;max-width:100%;width:auto;height:auto;max-height:158px;margin:0 auto;border-radius:8px">
-            <div class="cap">Metal — MT_Blowhole · MT_Crack · MT_Uneven<small>each pair: ground truth (left) vs model prediction with confidence (right)</small></div>
-          </div>
-          <div class="shot r" style="text-align:left">
-            <img src="../docs/images/rfdetr_glass_pairs.png" alt="glass GT vs prediction pairs" style="display:block;max-width:100%;width:auto;height:auto;max-height:158px;margin:0 auto;border-radius:8px">
-            <div class="cap">Glass — oil 0.93 · scratch 0.88 · stain 0.83<small>tiny sub-10 px stains are found; thin faint scratches are the remaining challenge</small></div>
-          </div>
-        </div>
-      </section>
-
-      <!-- 9 · SCALING STUDY -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">New · Data-scaling study</div>
-          <h2>Scaling synthetic data: 120 / 240 / 360 per class</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="tgrid r">
-          <div class="tstat"><div class="n">0.72→0.80</div><div class="l"><b>Synthetic test</b> mAP@50:95 rises with each step in training data</div></div>
-          <div class="tstat"><div class="n" style="color:var(--bad)">0.40→0.35</div><div class="l"><b>Real photos</b> — the trend reverses: the 120/class model transfers best</div></div>
+          <div class="tstat"><div class="n">0.72→0.80</div><div class="l"><b>Held-out synthetic test</b> mAP@50:95 rises with each step in training data</div></div>
+          <div class="tstat"><div class="n" style="color:var(--bad)">0.40→0.35</div><div class="l"><b>Held-out real photos</b> mAP@50:95 — the trend reverses: the 120/class model transfers best</div></div>
           <div class="tstat"><div class="n">20</div><div class="l"><b>shared base backgrounds</b> across all datasets limit diversity, regardless of image count</div></div>
         </div>
         <div class="shot r" style="text-align:left">
           <img src="../docs/images/rfdetr_scaling_curves.png" alt="synthetic vs real scaling curves" style="display:block;max-width:100%;height:auto;max-height:285px;margin:0 auto;border-radius:8px">
-          <div class="cap">Three RF-DETR Large models · nested datasets from one num_sdg=1800 DIG run · identical training recipe<small>past ~120 images/class from the same 20 backgrounds, synthetic metrics improve while real-world transfer declines</small></div>
+          <div class="cap">Three RF-DETR Large models · nested datasets from one num_sdg=1800 DIG run · identical training recipe<small>~70 / 15 / 15 train / valid / test split, grouped by base background (valid drives early stopping; test untouched) — past ~120 images/class from the same 20 backgrounds, synthetic metrics improve while real transfer declines</small></div>
         </div>
       </section>
 
-      <!-- 10 · SIM-TO-REAL -->
+      <!-- 8 · SIM-TO-REAL -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">New · Sanity check on real data</div>
-          <h2>Sim-to-real transfer: results on real photos</h2>
+          <div class="eyebrow">Sanity check on real data</div>
+          <h2>Impact and Insights: Sim-to-real transfer</h2>
           <div class="rule"></div>
         </div>
         <div class="vs r">
@@ -470,48 +466,42 @@
         <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
       </section>
 
-      <!-- 11 · WAR STORIES -->
+      <!-- 9 · INSIGHTS -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">The findings</div>
-          <h2>Four failures, four root causes</h2>
+          <div class="eyebrow">Learnings</div>
+          <h2>Three insights</h2>
           <div class="rule"></div>
         </div>
-        <div class="chips">
-          <div class="chip r"><h3><span class="k">›</span> OOM from missing S3 env <span class="sig">exit 2137</span></h3>
-            <p>Task pods get <b>no S3 env</b> from the chart → boto3 falls back to virtual-hosted DNS → unresolvable → ctrl leaks <b>13 MB/s</b> against a 24 h retry window until cgroup OOM. Fix: endpoint + path-style env in <b>POD_TEMPLATE</b>, both containers.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> Bucket lost on reboot <span class="sig">exit 2014</span></h3>
-            <p>The chart's localstack data dir was bind-mounted to host <b>/tmp</b> — wiped every reboot, and the bucket only exists via an install-time hook. Every workflow failed within 3 s; the logs API also returned <code>NoSuchBucket</code>.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> OAuth token fails in-pod <span class="sig">KeyError</span></h3>
-            <p>An HF <b>OAuth token</b> reads gated repos (probes pass) but fails in-pod <code>hf auth login</code> — no <code>accessToken</code> in whoami. Related: OSMO <b>snapshots credentials at submit time</b> — fix credentials <i>before</i> submitting.</p></div>
-          <div class="chip r"><h3><span class="k">›</span> Multipart upload failures <span class="sig">NoSuchUpload</span></h3>
-            <p>localstack-persist write-locks the server every 10 s; under an 80 GB upload, stalled clients retry <code>CompleteMultipartUpload</code> and race its part-cleanup. Upload progress regressed 40%→34% indefinitely. Fix: <b>replace with MinIO</b> — no errors.</p></div>
+        <div class="ins">
+          <div class="insrow r"><div class="num">1</div><div>
+            <div class="it">Synthetic data is judged by what it trains</div>
+            <ul>
+              <li>It needs clear evidence of downstream impact — DepthAnything and Apple's Depth Pro are the reference points.</li>
+              <li>Sim-to-real metrics are commonly questioned; the expensive but definitive measure is training the downstream detector — done here.</li>
+              <li><b>Recommend:</b> a companion end-to-end example embedded in the skill — e.g. automatically training a detector.</li>
+            </ul>
+          </div></div>
+          <div class="insrow r"><div class="num">2</div><div>
+            <div class="it">The platform was harder than the pipeline</div>
+            <ul>
+              <li>The Day-1 run itself takes 31 minutes; most of the effort went into standing up OSMO, kind, and storage first.</li>
+              <li>Heavy tooling multiplies the ways a run can fail, unless the skills that assemble it are tested and repeatable.</li>
+              <li><b>Recommend:</b> companion skills that get recommended automatically when there are gaps in the setup phase — e.g. OSMO, kind, MinIO as the default.</li>
+            </ul>
+          </div></div>
+          <div class="insrow r"><div class="num">3</div><div>
+            <div class="it">State the GPU specs upfront — the way PC games do</div>
+            <ul>
+              <li>It took several rounds of Q&amp;A with the skill to learn the Day 0 flow needs 2× GPUs; the minimum spec is not obvious.</li>
+              <li>AWS GPU quotas need business-case justification — extra lead time.</li>
+              <li><b>Recommend:</b> codify minimum and recommended GPU / VRAM requirements in the skill itself.</li>
+            </ul>
+          </div></div>
         </div>
-        <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
-      <!-- 12 · TIMINGS -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Measured, not estimated</div>
-          <h2>Timings on 1× RTX PRO 6000</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="tgrid r">
-          <div class="tstat"><div class="n">~3<small> min</small></div><div class="l"><b>Metal setup</b> — checkpoint + curated dataset → S3</div></div>
-          <div class="tstat"><div class="n">~56<small> min</small></div><div class="l"><b>Pretrained setup</b> — 80.6 GB: HF ↓ 11.5 min · assemble 21 min · S3 ↑ 23 min @ 63.6 MB/s</div></div>
-          <div class="tstat"><div class="n">~31<small> min</small></div><div class="l"><b>Day 1 run</b> — 22 min fixed input pull + ~8 min GPU + 5 s upload</div></div>
-        </div>
-        <div class="vs r">
-          <div class="vsbox bad"><h3>✗ localstack (chart default)</h3>
-            <p>Same 80.6 GB upload: <b>failed at 40%</b> after 26 min — <code>NoSuchUpload</code> on every multi-GB file, progress regressing, stopped by the 1 h timeout. Bucket also lost on every reboot.</p></div>
-          <div class="vsbox good"><h3>✓ MinIO (this repo)</h3>
-            <p>Identical upload: <b>completed in 22:40</b> at 63.6 MB/s average (peaks 305 MB/s), <b>zero</b> multipart errors, data durable on the host's 1 TB volume across reboots.</p></div>
-        </div>
-        <div class="amort r"><b>Scaling:</b> the 22-min input pull is a <b>fixed</b> cost — 30 images cost ~16 s/image end-to-end, but ~300 images ≈ <b>1.7 h</b>, not 10× the 31-min run. Larger batches amortize the fixed cost.</div>
-      </section>
-
-      <!-- 13 · NEXT STEPS -->
+      <!-- 10 · NEXT STEPS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Where it goes</div>
@@ -643,7 +633,8 @@
   if(fwdBtn) fwdBtn.addEventListener('click',function(){ pauseFlow(); setFlow(flowIdx+1); });
   if(backBtn) backBtn.addEventListener('click',function(){ pauseFlow(); setFlow(flowIdx-1); });
 
-  go(0);
+  var h=parseInt(location.hash.slice(1),10);
+  go(isNaN(h)?0:h-1);
 })();
 </script>
 </body>
