@@ -342,7 +342,44 @@
         <div class="footnote r"><b>SKILL</b> = the <i>physical-ai-defect-image-generation</i> skill, run as designed · <b>MODIFIED</b> = the default deployment changed here (chart's localstack → MinIO) · <b>ADDED</b> = built new in this repo (the local OSMO platform, the forensics, the detector training).</div>
       </section>
 
-      <!-- 5 · ONE RUN, END TO END (interactive) -->
+      <!-- 5 · ARCHITECTURE -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">How it's built</div>
+          <h2>Architecture — one host, three planes</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="arch">
+          <div class="col r">
+            <div class="ctitle">Host · 62 GiB / 1 TB</div>
+            <div class="stackbox">
+              <div class="node">kind cluster <small>1 control-plane + 5 workers</small></div>
+              <div class="node">NVIDIA driver + container toolkit <small>GPU passthrough to compute node</small></div>
+              <div class="node green">/var/lib/osmo-minio <small>durable S3 data — host-mounted (not /tmp!)</small></div>
+            </div>
+          </div>
+          <div class="col r">
+            <div class="ctitle">osmo namespace</div>
+            <div class="stackbox">
+              <div class="node">envoy gateway <small>no-auth dev identity · host :80</small></div>
+              <div class="node">osmo service + worker + logger <small>postgres · redis</small></div>
+              <div class="node green">MinIO :9000 <small>bucket <code>osmo</code> — data + logs + artifacts</small></div>
+              <div class="node">backend-operator <small>token login (not password/dev)</small></div>
+            </div>
+          </div>
+          <div class="col r">
+            <div class="ctitle">Workflow plane</div>
+            <div class="stackbox">
+              <div class="node gate"><b>POD_TEMPLATE</b><small>S3 env · nvoptix · 16 GiB /dev/shm — ConfigMap-managed</small></div>
+              <div class="node">task pods <small>osmo-ctrl + user container · namespace <code>default</code></small></div>
+              <div class="node green">AnomalyGen 2B on RTX PRO 6000 <small>21.6 GiB GPU mem · ~25 it/s</small></div>
+            </div>
+          </div>
+        </div>
+        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes on the war-stories slide.</div>
+      </section>
+
+      <!-- 6 · ONE RUN, END TO END (interactive) -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">How it works</div>
@@ -377,7 +414,7 @@
         </div>
       </section>
 
-      <!-- 6 · RESULTS -->
+      <!-- 7 · RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The output</div>
@@ -399,7 +436,7 @@
         <div class="footnote r">6 samples per class × 5 classes = 30 images, each with mask + crop + overlay + CSV row + DAFT-v3 labels.</div>
       </section>
 
-      <!-- 7 · FINETUNE: APPROACH -->
+      <!-- 8 · FINETUNE: APPROACH -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Closing the loop</div>
@@ -429,7 +466,7 @@
         <div class="footnote r">defects-gen/finetune-rf-detr: build_dataset.py · train.py · evaluate.py (--usecase metal|glass) · full write-ups in REPORT.md / REPORT_GLASS.md</div>
       </section>
 
-      <!-- 8 · FINETUNE: RESULTS -->
+      <!-- 9 · FINETUNE: RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Detection results</div>
@@ -450,7 +487,7 @@
         <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
       </section>
 
-      <!-- 9 · SCALING STUDY -->
+      <!-- 10 · SCALING STUDY -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Data-scaling study</div>
@@ -468,7 +505,7 @@
         </div>
       </section>
 
-      <!-- 10 · SIM-TO-REAL -->
+      <!-- 11 · SIM-TO-REAL -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Sanity check on real data</div>
@@ -488,7 +525,7 @@
         <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
       </section>
 
-      <!-- 11 · WAR STORIES -->
+      <!-- 12 · WAR STORIES -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The findings</div>
@@ -508,7 +545,7 @@
         <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
-      <!-- 12 · NEXT STEPS -->
+      <!-- 13 · NEXT STEPS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Where it goes</div>
@@ -523,43 +560,6 @@
           <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
         </div>
         <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
-      </section>
-
-      <!-- 13 · ARCHITECTURE -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Backup · How it's built</div>
-          <h2>Architecture — one host, three planes</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="arch">
-          <div class="col r">
-            <div class="ctitle">Host · 62 GiB / 1 TB</div>
-            <div class="stackbox">
-              <div class="node">kind cluster <small>1 control-plane + 5 workers</small></div>
-              <div class="node">NVIDIA driver + container toolkit <small>GPU passthrough to compute node</small></div>
-              <div class="node green">/var/lib/osmo-minio <small>durable S3 data — host-mounted (not /tmp!)</small></div>
-            </div>
-          </div>
-          <div class="col r">
-            <div class="ctitle">osmo namespace</div>
-            <div class="stackbox">
-              <div class="node">envoy gateway <small>no-auth dev identity · host :80</small></div>
-              <div class="node">osmo service + worker + logger <small>postgres · redis</small></div>
-              <div class="node green">MinIO :9000 <small>bucket <code>osmo</code> — data + logs + artifacts</small></div>
-              <div class="node">backend-operator <small>token login (not password/dev)</small></div>
-            </div>
-          </div>
-          <div class="col r">
-            <div class="ctitle">Workflow plane</div>
-            <div class="stackbox">
-              <div class="node gate"><b>POD_TEMPLATE</b><small>S3 env · nvoptix · 16 GiB /dev/shm — ConfigMap-managed</small></div>
-              <div class="node">task pods <small>osmo-ctrl + user container · namespace <code>default</code></small></div>
-              <div class="node green">AnomalyGen 2B on RTX PRO 6000 <small>21.6 GiB GPU mem · ~25 it/s</small></div>
-            </div>
-          </div>
-        </div>
-        <div class="archnote r">Every workflow pod inherits its S3 endpoint + path-style env from <b>POD_TEMPLATE</b> — the single template behind three of the four failure root causes on the war-stories slide.</div>
       </section>
 
       <!-- 14 · FINETUNE: QUALITATIVE -->
