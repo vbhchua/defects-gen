@@ -89,6 +89,8 @@
     padding:4px 9px;border-radius:999px}
   .pill.ok{background:var(--green-soft);color:var(--green-d)}
   .pill.wip{background:var(--warnbg);color:var(--warn)}
+  .pill.nat{background:#eef3fb;color:#1f6feb}
+  .pill.mod{background:var(--warnbg);color:var(--warn)}
 
   /* architecture */
   .arch{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;flex:1;align-items:stretch;margin-top:6px}
@@ -310,7 +312,37 @@
         <div class="footnote r">Real: the Magnetic Tile defect dataset · the Roboflow mobile-screen dataset. Synthetic: Cosmos AnomalyGen 2B output from the Day-1 runs in this repo.</div>
       </section>
 
-      <!-- 4 · ONE RUN, END TO END (interactive) -->
+      <!-- 4 · WHAT'S IN THE BOX -->
+      <section class="slide">
+        <div class="head r">
+          <div class="eyebrow">Key features</div>
+          <h2>What defects-gen does</h2>
+          <div class="rule"></div>
+        </div>
+        <div class="grid3">
+          <div class="card r"><span class="pill ok">ADDED</span><div class="ic">🏗️</div>
+            <h3>OSMO on kind</h3>
+            <p>6-node cluster: GPU passthrough, <code>node_group</code> scheduling, no-auth dev gateway. Two Helm charts, values in-repo.</p></div>
+          <div class="card r"><span class="pill mod">MODIFIED</span><div class="ic">🪣</div>
+            <h3>MinIO S3 backend</h3>
+            <p>Disk-native on the host's <b>1 TB volume</b>. Survives reboots; sustains 80 GB multipart uploads at <b>60–300 MB/s</b>.</p></div>
+          <div class="card r"><span class="pill nat">SKILL</span><div class="ic">🎨</div>
+            <h3>Cosmos AnomalyGen</h3>
+            <p>Metal-surface Day 1 (manual ROI) via NVIDIA's <b>DIG skill</b> — 5 defect classes, pretrained passthrough.</p></div>
+          <div class="card r"><span class="pill nat">SKILL</span><div class="ic">🏷️</div>
+            <h3>Labels included</h3>
+            <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
+          <div class="card r"><span class="pill ok">ADDED</span><div class="ic">🔬</div>
+            <h3>Failure forensics</h3>
+            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM retry loops, bucket loss on reboot, token auth failures, multipart upload errors.</p></div>
+          <div class="card r"><span class="pill ok">ADDED</span><div class="ic">🧪</div>
+            <h3>Detectors trained on it</h3>
+            <p><b>RF-DETR Large</b> finetuned locally on the metal &amp; glass outputs — 0.85 / 0.97 mAP@50 on held-out backgrounds. PCBA next; cookbooks already in the skill.</p></div>
+        </div>
+        <div class="footnote r"><b>SKILL</b> = the <i>physical-ai-defect-image-generation</i> skill, run as designed · <b>MODIFIED</b> = the default deployment changed here (chart's localstack → MinIO) · <b>ADDED</b> = built new in this repo (the local OSMO platform, the forensics, the detector training).</div>
+      </section>
+
+      <!-- 5 · ONE RUN, END TO END (interactive) -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">How it works</div>
@@ -345,7 +377,7 @@
         </div>
       </section>
 
-      <!-- 5 · RESULTS -->
+      <!-- 6 · RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The output</div>
@@ -367,7 +399,7 @@
         <div class="footnote r">6 samples per class × 5 classes = 30 images, each with mask + crop + overlay + CSV row + DAFT-v3 labels.</div>
       </section>
 
-      <!-- 6 · FINETUNE: APPROACH -->
+      <!-- 7 · FINETUNE: APPROACH -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Closing the loop</div>
@@ -397,7 +429,7 @@
         <div class="footnote r">defects-gen/finetune-rf-detr: build_dataset.py · train.py · evaluate.py (--usecase metal|glass) · full write-ups in REPORT.md / REPORT_GLASS.md</div>
       </section>
 
-      <!-- 7 · FINETUNE: RESULTS -->
+      <!-- 8 · FINETUNE: RESULTS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Detection results</div>
@@ -418,7 +450,7 @@
         <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
       </section>
 
-      <!-- 8 · SCALING STUDY -->
+      <!-- 9 · SCALING STUDY -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Data-scaling study</div>
@@ -436,7 +468,7 @@
         </div>
       </section>
 
-      <!-- 9 · SIM-TO-REAL -->
+      <!-- 10 · SIM-TO-REAL -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Sanity check on real data</div>
@@ -456,7 +488,7 @@
         <div class="amort r"><b>Why glass transfers better:</b> its synthetic images use real phone photos as backgrounds — only the defect is synthetic; metal synthesizes both. Next steps: mix real images into training, add base backgrounds, diversify defect geometry.</div>
       </section>
 
-      <!-- 10 · WAR STORIES -->
+      <!-- 11 · WAR STORIES -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">The findings</div>
@@ -476,7 +508,7 @@
         <div class="footnote r">Full analysis with logs and timelines in PROGRESS.md · each failure signature is documented for quick diagnosis.</div>
       </section>
 
-      <!-- 11 · NEXT STEPS -->
+      <!-- 12 · NEXT STEPS -->
       <section class="slide">
         <div class="head r">
           <div class="eyebrow">Where it goes</div>
@@ -491,35 +523,6 @@
           <div class="nstep opt r"><div class="num">5</div><div><div class="nt">Production hardening</div><div class="nd">Real IdP instead of the no-auth gateway, external S3, multi-GPU pool — the values files are the only thing that changes.</div></div></div>
         </div>
         <div class="footnote r">Repo: github.com/vbhchua/defects-gen · pipeline: NVIDIA physical-ai-defect-image-generation skill · platform: NVIDIA OSMO</div>
-      </section>
-
-      <!-- 12 · WHAT'S IN THE BOX -->
-      <section class="slide">
-        <div class="head r">
-          <div class="eyebrow">Backup · What defects-gen delivers</div>
-          <h2>One repo, the whole stack</h2>
-          <div class="rule"></div>
-        </div>
-        <div class="grid3">
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏗️</div>
-            <h3>OSMO on kind</h3>
-            <p>6-node cluster: GPU passthrough, <code>node_group</code> scheduling, no-auth dev gateway. Two Helm charts, values in-repo.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🪣</div>
-            <h3>MinIO S3 backend</h3>
-            <p>Disk-native on the host's <b>1 TB volume</b>. Survives reboots; sustains 80 GB multipart uploads at <b>60–300 MB/s</b>.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🎨</div>
-            <h3>Cosmos AnomalyGen</h3>
-            <p>Metal-surface Day 1 (manual ROI) via NVIDIA's <b>DIG skill</b> — 5 defect classes, pretrained passthrough.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🏷️</div>
-            <h3>Labels included</h3>
-            <p>Every image ships with mask, crop, annotated overlay, <code>SDG_result.csv</code> and <b>DAFT-v3</b> artifacts.</p></div>
-          <div class="card r"><span class="pill ok">SHIPPED</span><div class="ic">🔬</div>
-            <h3>Failure forensics</h3>
-            <p><b>PROGRESS.md</b>: every failure signature root-caused — OOM retry loops, bucket loss on reboot, token auth failures, multipart upload errors.</p></div>
-          <div class="card r"><span class="pill ok">VERIFIED</span><div class="ic">🧪</div>
-            <h3>Detectors trained on it</h3>
-            <p><b>RF-DETR Large</b> finetuned locally on the metal &amp; glass outputs — 0.85 / 0.97 mAP@50 on held-out backgrounds. PCBA next; cookbooks already in the skill.</p></div>
-        </div>
       </section>
 
       <!-- 13 · ARCHITECTURE -->
