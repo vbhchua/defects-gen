@@ -221,7 +221,7 @@
       <section class="slide">
         <div class="hero">
           <div>
-            <span class="tag r">Testing NVIDIA Cosmos for defects generation</span>
+            <span class="tag r">NVIDIA Cosmos + OSMO · self-hosted end-to-end</span>
             <h1 class="r">defects-gen<span class="dot">.</span></h1>
             <div class="sub r"><b>Synthetic defect images for AOI</b> — the full
               <span class="accent">NVIDIA OSMO + Cosmos AnomalyGen</span> pipeline,
@@ -365,7 +365,7 @@
       <!-- 6 · FINETUNE: APPROACH -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">New · Closing the loop</div>
+          <div class="eyebrow">Closing the loop</div>
           <h2>Synthetic data → object detector, all local</h2>
           <div class="rule"></div>
         </div>
@@ -395,7 +395,7 @@
       <!-- 7 · FINETUNE: RESULTS -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">New · Detection results</div>
+          <div class="eyebrow">Detection results</div>
           <h2>Held-out test performance — never-seen backgrounds</h2>
           <div class="rule"></div>
         </div>
@@ -410,13 +410,13 @@
           <div class="vsbox bad"><h3>✗ Metal — MT_Break lags</h3>
             <p>Blowhole/Fray/Uneven at 0.92–0.93 AP@50, but <b>MT_Break 0.67</b> — low-contrast smudges: 8/26 missed, most false positives. It also had only 2 valid-split samples; more Break data is the fix.</p></div>
         </div>
-        <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across backgrounds rather than memorizing them. Next: evaluation on real, non-synthetic defect images.</div>
+        <div class="amort r">The small valid→test gap (metal 0.73→0.69, glass 0.76→0.78 mAP@50:95) indicates the detectors generalize across held-out <b>synthetic</b> backgrounds rather than memorizing them — transfer to real photos is measured separately on the sim-to-real slide.</div>
       </section>
 
       <!-- 8 · FINETUNE: QUALITATIVE -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">New · Prediction quality</div>
+          <div class="eyebrow">Prediction quality</div>
           <h2>Ground truth vs prediction — test set</h2>
           <div class="rule"></div>
         </div>
@@ -435,13 +435,13 @@
       <!-- 9 · SCALING STUDY -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">New · Data-scaling study</div>
+          <div class="eyebrow">Data-scaling study</div>
           <h2>Scaling synthetic data: 120 / 240 / 360 per class</h2>
           <div class="rule"></div>
         </div>
         <div class="tgrid r">
           <div class="tstat"><div class="n">0.72→0.80</div><div class="l"><b>Synthetic test</b> mAP@50:95 rises with each step in training data</div></div>
-          <div class="tstat"><div class="n" style="color:var(--bad)">0.40→0.35</div><div class="l"><b>Real photos</b> — the trend reverses: the 120/class model transfers best</div></div>
+          <div class="tstat"><div class="n" style="color:var(--bad)">0.40→0.35</div><div class="l"><b>Real photos</b> mAP@50:95 — the trend reverses: the 120/class model transfers best</div></div>
           <div class="tstat"><div class="n">20</div><div class="l"><b>shared base backgrounds</b> across all datasets limit diversity, regardless of image count</div></div>
         </div>
         <div class="shot r" style="text-align:left">
@@ -453,7 +453,7 @@
       <!-- 10 · SIM-TO-REAL -->
       <section class="slide">
         <div class="head r">
-          <div class="eyebrow">New · Sanity check on real data</div>
+          <div class="eyebrow">Sanity check on real data</div>
           <h2>Sim-to-real transfer: results on real photos</h2>
           <div class="rule"></div>
         </div>
@@ -643,7 +643,8 @@
   if(fwdBtn) fwdBtn.addEventListener('click',function(){ pauseFlow(); setFlow(flowIdx+1); });
   if(backBtn) backBtn.addEventListener('click',function(){ pauseFlow(); setFlow(flowIdx-1); });
 
-  go(0);
+  var h=parseInt(location.hash.slice(1),10);
+  go(isNaN(h)?0:h-1);
 })();
 </script>
 </body>
